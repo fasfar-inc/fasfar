@@ -1,59 +1,44 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions } from "../../auth/[...nextauth]/route"
 import { prisma } from "@/lib/prisma"
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 
-// GET /api/messages/[partnerId] - Récupérer les messages avec un utilisateur spécifique
 export async function GET(request: NextRequest, { params }: { params: { partnerId: string } }) {
   try {
-    const partnerId = Number.parseInt(params.partnerId)
     const session = await getServerSession(authOptions)
 
-    if (!session) {
-      return NextResponse.json({ error: "Authentication required" }, { status: 401 })
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
     }
 
     const userId = Number.parseInt(session.user.id)
-    const searchParams = request.nextUrl.searchParams
+    const partnerId = Number.parseInt(params.partnerId)
 
-    // Paramètres de pagination
-    const page = searchParams.get("page") ? Number.parseInt(searchParams.get("page") as string) : 1
-    const limit = searchParams.get("limit") ? Number.parseInt(searchParams.get("limit") as string) : 20
-    const productId = searchParams.get("productId")
-      ? Number.parseInt(searchParams.get("productId") as string)
-      : undefined
+    // Récupérer l'ID du produit s'il est spécifié dans la requête
+    const url = new URL(request.url)
+    const productId = url.searchParams.get("productId")
 
-    // Calcul de la pagination
-    const skip = (page - 1) * limit
-
-    // Construire la requête
-    const where: any = {
+    // Construire la requête de base
+    const whereClause: any = {
       OR: [
-        { senderId: userId, receiverId: partnerId },
-        { senderId: partnerId, receiverId: userId },
+        { AND: [{ senderId: userId }, { receiverId: partnerId }] },
+        { AND: [{ senderId: partnerId }, { receiverId: userId }] },
       ],
     }
 
+    // Ajouter le filtre par produit si spécifié
     if (productId) {
-      where.productId = productId
+      whereClause.productId = Number.parseInt(productId)
     }
 
-    // Récupérer les messages
+    // Récupérer les messages entre les deux utilisateurs
     const messages = await prisma.message.findMany({
-      where,
-      orderBy: { createdAt: "desc" },
-      skip,
-      take: limit,
+      where: whereClause,
+      orderBy: {
+        createdAt: "asc",
+      },
       include: {
         sender: {
-          select: {
-            id: true,
-            username: true,
-            profileImage: true,
-            isVerified: true,
-          },
-        },
-        receiver: {
           select: {
             id: true,
             username: true,
@@ -69,16 +54,16 @@ export async function GET(request: NextRequest, { params }: { params: { partnerI
             images: {
               where: { isPrimary: true },
               take: 1,
+              select: {
+                imageUrl: true,
+              },
             },
           },
         },
       },
     })
 
-    // Compter le nombre total de messages pour la pagination
-    const totalMessages = await prisma.message.count({ where })
-
-    // Marquer les messages comme lus
+    // Marquer les messages non lus comme lus
     await prisma.message.updateMany({
       where: {
         senderId: partnerId,
@@ -87,13 +72,18 @@ export async function GET(request: NextRequest, { params }: { params: { partnerI
       },
       data: {
         status: "READ",
-        // Pas besoin de mettre à jour readAt car ce champ n'existe pas dans notre modèle
       },
     })
 
-    // Formater les messages
+    // Formater les messages pour l'affichage
     const formattedMessages = messages.map((message) => ({
-      ...message,
+      id: message.id,
+      content: message.content,
+      createdAt: message.createdAt,
+      senderId: message.senderId,
+      receiverId: message.receiverId,
+      status: message.status,
+      sender: message.sender,
       product: message.product
         ? {
             ...message.product,
@@ -102,17 +92,62 @@ export async function GET(request: NextRequest, { params }: { params: { partnerI
         : null,
     }))
 
-    return NextResponse.json({
-      messages: formattedMessages,
-      pagination: {
-        total: totalMessages,
-        page,
-        limit,
-        pages: Math.ceil(totalMessages / limit),
+    return NextResponse.json(formattedMessages)
+  } catch (error) {
+    console.error("Erreur lors de la récupération des messages:", error)
+    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
+  }
+}
+
+export async function POST(request: NextRequest, { params }: { params: { partnerId: string } }) {
+  try {
+    const session = await getServerSession(authOptions)
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
+    }
+
+    const { content, productId } = await request.json()
+    const senderId = Number.parseInt(session.user.id)
+    const receiverId = Number.parseInt(params.partnerId)
+
+    if (!content) {
+      return NextResponse.json({ error: "Contenu requis" }, { status: 400 })
+    }
+
+    // Vérifier que le destinataire existe
+    const receiver = await prisma.user.findUnique({
+      where: { id: receiverId },
+    })
+
+    if (!receiver) {
+      return NextResponse.json({ error: "Destinataire introuvable" }, { status: 404 })
+    }
+
+    // Créer le message
+    const message = await prisma.message.create({
+      data: {
+        content,
+        senderId,
+        receiverId,
+        productId: productId ? Number.parseInt(productId) : undefined,
+        status: "SENT",
+      },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            username: true,
+            profileImage: true,
+            isVerified: true,
+          },
+        },
       },
     })
+
+    return NextResponse.json(message)
   } catch (error) {
-    console.error("Error fetching messages:", error)
-    return NextResponse.json({ error: "Failed to fetch messages" }, { status: 500 })
+    console.error("Erreur lors de l'envoi du message:", error)
+    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
   }
 }

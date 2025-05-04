@@ -11,7 +11,6 @@ import {
   ArrowLeft,
   Heart,
   MapPin,
-  MessageCircle,
   Share2,
   Star,
   ChevronLeft,
@@ -750,33 +749,19 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
                   </div>
                 </div>
                 {!isOwner && (
-                  <Link href={`/messages/${product.seller.id}`}>
-                    <Button
-                      className="bg-rose-500 hover:bg-rose-600 relative overflow-hidden group"
-                      onClick={(e) => {
-                        // Créer un effet d'onde au clic
-                        const button = e.currentTarget
-                        const circle = document.createElement("span")
-                        const diameter = Math.max(button.clientWidth, button.clientHeight)
-                        const radius = diameter / 2
-
-                        circle.style.width = circle.style.height = `${diameter}px`
-                        circle.style.left = `${e.clientX - button.getBoundingClientRect().left - radius}px`
-                        circle.style.top = `${e.clientY - button.getBoundingClientRect().top - radius}px`
-                        circle.classList.add("ripple")
-
-                        const ripple = button.getElementsByClassName("ripple")[0]
-                        if (ripple) {
-                          ripple.remove()
-                        }
-
-                        button.appendChild(circle)
-                      }}
-                    >
-                      <MessageCircle className="mr-2 h-4 w-4" />
-                      Contacter
-                    </Button>
-                  </Link>
+                  <Button
+                    variant="outline"
+                    className="w-full md:w-auto"
+                    onClick={() => {
+                      if (!session?.user) {
+                        router.push(`/login?callbackUrl=/product/${product.id}`)
+                        return
+                      }
+                      router.push(`/messages/${product.seller.id}?productId=${product.id}`)
+                    }}
+                  >
+                    Contacter
+                  </Button>
                 )}
               </div>
               <div className="grid grid-cols-2 gap-4 rounded-lg border bg-gray-50 p-4 text-sm">

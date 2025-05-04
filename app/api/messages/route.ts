@@ -1,148 +1,26 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions } from "../auth/[...nextauth]/route"
 import { prisma } from "@/lib/prisma"
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 
-// GET /api/messages - Récupérer les conversations de l'utilisateur
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
 
-    if (!session) {
-      return NextResponse.json({ error: "Authentication required" }, { status: 401 })
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
     }
 
     const userId = Number.parseInt(session.user.id)
 
-    // Récupérer les derniers messages de chaque conversation
-    const conversations = await prisma.$queryRaw`
-      SELECT DISTINCT ON (conversation_partner)
-        m.id,
-        m.content,
-        m.created_at as "createdAt",
-        m.status,
-        CASE 
-          WHEN m.sender_id = ${userId} THEN m.receiver_id
-          ELSE m.sender_id
-        END as conversation_partner,
-        CASE 
-          WHEN m.sender_id = ${userId} THEN false
-          ELSE true
-        END as is_received,
-        m.product_id as "productId"
-      FROM messages m
-      WHERE m.sender_id = ${userId} OR m.receiver_id = ${userId}
-      ORDER BY conversation_partner, m.created_at DESC
-    `
-
-    // Récupérer les informations des utilisateurs et des produits
-    const conversationsWithDetails = await Promise.all(
-      (conversations as any[]).map(async (conv) => {
-        const partner = await prisma.user.findUnique({
-          where: { id: conv.conversation_partner },
-          select: {
-            id: true,
-            username: true,
-            profileImage: true,
-            isVerified: true,
-          },
-        })
-
-        let product = null
-        if (conv.productId) {
-          product = await prisma.product.findUnique({
-            where: { id: conv.productId },
-            select: {
-              id: true,
-              title: true,
-              price: true,
-              images: {
-                where: { isPrimary: true },
-                take: 1,
-              },
-            },
-          })
-        }
-
-        // Compter les messages non lus
-        const unreadCount = await prisma.message.count({
-          where: {
-            senderId: conv.conversation_partner,
-            receiverId: userId,
-            status: { not: "READ" },
-          },
-        })
-
-        return {
-          id: conv.id,
-          content: conv.content,
-          createdAt: conv.createdAt,
-          status: conv.status,
-          isReceived: conv.is_received,
-          partner,
-          product: product
-            ? {
-                ...product,
-                primaryImage: product.images[0]?.imageUrl || null,
-              }
-            : null,
-          unreadCount,
-        }
-      }),
-    )
-
-    return NextResponse.json(conversationsWithDetails)
-  } catch (error) {
-    console.error("Error fetching conversations:", error)
-    return NextResponse.json({ error: "Failed to fetch conversations" }, { status: 500 })
-  }
-}
-
-// POST /api/messages - Envoyer un nouveau message
-export async function POST(request: NextRequest) {
-  try {
-    const session = await getServerSession(authOptions)
-
-    if (!session) {
-      return NextResponse.json({ error: "Authentication required" }, { status: 401 })
-    }
-
-    const senderId = Number.parseInt(session.user.id)
-    const data = await request.json()
-
-    // Validation des données
-    if (!data.receiverId || !data.content) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
-    }
-
-    // Vérifier que le destinataire existe
-    const receiver = await prisma.user.findUnique({
-      where: { id: data.receiverId },
-    })
-
-    if (!receiver) {
-      return NextResponse.json({ error: "Receiver not found" }, { status: 404 })
-    }
-
-    // Vérifier que le produit existe si spécifié
-    if (data.productId) {
-      const product = await prisma.product.findUnique({
-        where: { id: data.productId },
-      })
-
-      if (!product) {
-        return NextResponse.json({ error: "Product not found" }, { status: 404 })
-      }
-    }
-
-    // Créer le message
-    const message = await prisma.message.create({
-      data: {
-        senderId,
-        receiverId: data.receiverId,
-        productId: data.productId,
-        content: data.content,
-        status: "SENT",
+    // Récupérer toutes les conversations où l'utilisateur est impliqué
+    // Utiliser les noms de tables et de colonnes du schéma Prisma
+    const conversations = await prisma.message.findMany({
+      where: {
+        OR: [{ senderId: userId }, { receiverId: userId }],
+      },
+      orderBy: {
+        createdAt: "desc",
       },
       include: {
         sender: {
@@ -169,37 +47,146 @@ export async function POST(request: NextRequest) {
             images: {
               where: { isPrimary: true },
               take: 1,
+              select: {
+                imageUrl: true,
+              },
             },
           },
         },
       },
     })
 
-    // Formater la réponse
-    const formattedMessage = {
-      ...message,
-      product: message.product
-        ? {
-            ...message.product,
-            primaryImage: message.product.images[0]?.imageUrl || null,
-          }
-        : null,
+    // Regrouper les messages par conversation (partenaire + produit)
+    const conversationMap = new Map()
+
+    for (const message of conversations) {
+      const partnerId = message.senderId === userId ? message.receiverId : message.senderId
+      const partner = message.senderId === userId ? message.receiver : message.sender
+      const key = `${partnerId}-${message.productId || "general"}`
+
+      if (!conversationMap.has(key) || new Date(message.createdAt) > new Date(conversationMap.get(key).createdAt)) {
+        conversationMap.set(key, {
+          id: message.id,
+          content: message.content,
+          createdAt: message.createdAt,
+          isReceived: message.receiverId === userId,
+          status: message.status || "SENT",
+          partner: {
+            id: partner.id,
+            username: partner.username,
+            profileImage: partner.profileImage,
+            isVerified: partner.isVerified,
+          },
+          product: message.product
+            ? {
+                id: message.product.id,
+                title: message.product.title,
+                price: message.product.price,
+                primaryImage: message.product.images[0]?.imageUrl || null,
+              }
+            : null,
+          unreadCount: 0, // Nous allons calculer cela ci-dessous
+        })
+      }
     }
 
-    // Créer une notification pour le destinataire
-    await prisma.notification.create({
-      data: {
-        userId: data.receiverId,
-        title: "Nouveau message",
-        message: `Vous avez reçu un nouveau message de ${session.user.name}`,
-        type: "INFO",
-        relatedProductId: data.productId,
+    // Calculer le nombre de messages non lus pour chaque conversation
+    const unreadCounts = await prisma.message.groupBy({
+      by: ["senderId"],
+      where: {
+        receiverId: userId,
+        status: { not: "READ" },
+      },
+      _count: {
+        id: true,
       },
     })
 
-    return NextResponse.json(formattedMessage)
+    // Mettre à jour les compteurs de messages non lus
+    for (const count of unreadCounts) {
+      const partnerId = count.senderId
+      for (const [key, conversation] of conversationMap.entries()) {
+        if (key.startsWith(`${partnerId}-`)) {
+          conversation.unreadCount = count._count.id
+        }
+      }
+    }
+
+    // Convertir la Map en tableau
+    const formattedConversations = Array.from(conversationMap.values())
+
+    return NextResponse.json(formattedConversations)
   } catch (error) {
-    console.error("Error sending message:", error)
-    return NextResponse.json({ error: "Failed to send message" }, { status: 500 })
+    console.error("Erreur lors de la récupération des conversations:", error)
+    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions)
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
+    }
+
+    const { receiverId, content, productId } = await request.json()
+
+    if (!receiverId || !content) {
+      return NextResponse.json({ error: "Destinataire et contenu requis" }, { status: 400 })
+    }
+
+    const senderId = Number.parseInt(session.user.id)
+
+    // Vérifier que l'utilisateur n'essaie pas de s'envoyer un message à lui-même
+    if (senderId === Number.parseInt(receiverId)) {
+      return NextResponse.json({ error: "Vous ne pouvez pas vous envoyer un message à vous-même" }, { status: 400 })
+    }
+
+    // Vérifier que le destinataire existe
+    const receiver = await prisma.user.findUnique({
+      where: { id: Number.parseInt(receiverId) },
+    })
+
+    if (!receiver) {
+      return NextResponse.json({ error: "Destinataire introuvable" }, { status: 404 })
+    }
+
+    // Vérifier que le produit existe si un productId est fourni
+    if (productId) {
+      const product = await prisma.product.findUnique({
+        where: { id: Number.parseInt(productId) },
+      })
+
+      if (!product) {
+        return NextResponse.json({ error: "Produit introuvable" }, { status: 404 })
+      }
+    }
+
+    // Créer le message
+    const message = await prisma.message.create({
+      data: {
+        content,
+        senderId,
+        receiverId: Number.parseInt(receiverId),
+        productId: productId ? Number.parseInt(productId) : undefined,
+        status: "SENT",
+      },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            username: true,
+            profileImage: true,
+            isVerified: true,
+          },
+        },
+      },
+    })
+
+    return NextResponse.json(message)
+  } catch (error) {
+    console.error("Erreur lors de l'envoi du message:", error)
+    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
   }
 }

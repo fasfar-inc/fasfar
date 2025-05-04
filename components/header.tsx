@@ -15,20 +15,25 @@ export function Header() {
       <div className="container flex h-16 items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
           <ShoppingBag className="h-6 w-6 text-rose-500" />
-          <span className="text-xl font-bold">fasfar</span>
+          <span className="text-xl font-bold">Fastav</span>
         </Link>
         <div className="hidden md:flex md:flex-1 md:items-center md:justify-end md:space-x-4">
           <nav className="hidden md:flex items-center space-x-6">
-          <Link href="/about" className="text-sm font-medium transition-colors hover:text-rose-500">
-              À propos
-            </Link>
-            <Link href="/marketplace" className="text-sm font-medium transition-colors hover:text-rose-500 flex items-center">
-            <ShoppingBag className="h-4 w-4 mr-1" />
+            <Link href="/marketplace" className="text-sm font-medium transition-colors hover:text-rose-500">
               Marketplace
             </Link>
             <Link href="/map" className="text-sm font-medium transition-colors hover:text-rose-500 flex items-center">
               <MapPin className="h-4 w-4 mr-1" />
               Carte
+            </Link>
+            <Link href="/categories" className="text-sm font-medium transition-colors hover:text-rose-500">
+              Catégories
+            </Link>
+            <Link href="/about" className="text-sm font-medium transition-colors hover:text-rose-500">
+              À propos
+            </Link>
+            <Link href="/messages" className="text-sm font-medium transition-colors hover:text-rose-500">
+              Messages
             </Link>
           </nav>
           <div className="flex items-center space-x-2">
@@ -61,7 +66,7 @@ export function Header() {
             <div className="flex justify-between items-center mb-8">
               <Link href="/" className="flex items-center gap-2">
                 <ShoppingBag className="h-6 w-6 text-rose-500" />
-                <span className="text-xl font-bold">fasfar</span>
+                <span className="text-xl font-bold">Fastav</span>
               </Link>
               <Button variant="outline" size="icon" onClick={() => setMobileMenuOpen(false)}>
                 <svg
