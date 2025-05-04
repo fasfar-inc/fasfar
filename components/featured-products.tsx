@@ -6,34 +6,19 @@ import { ArrowRight, MapPin } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 
-const featuredProducts = [
-  {
-    id: 1,
-    title: "iPhone 16 Pro - 256GB",
-    price: 999,
-    location: "Paris, 75001",
-    distance: 2.4,
-    image: "/placeholder.svg?height=400&width=400",
-  },
-  {
-    id: 2,
-    title: "MacBook Air M3 - 512GB",
-    price: 1299,
-    location: "Bordeaux, 33000",
-    distance: 0.9,
-    image: "/placeholder.svg?height=400&width=400",
-  },
-  {
-    id: 3,
-    title: "Robot Cuisine Multifonction",
-    price: 349,
-    location: "Toulouse, 31000",
-    distance: 4.2,
-    image: "/placeholder.svg?height=400&width=400",
-  },
-]
+interface Product {
+  id: string
+  title: string
+  price: number
+  location: string
+  image: string
+}
 
-export function FeaturedProducts() {
+interface FeaturedProductsProps {
+  products: Product[]
+}
+
+export function FeaturedProducts({ products }: FeaturedProductsProps) {
   // Ajouter un style pour l'effet de badge
   if (typeof document !== "undefined") {
     const style = document.createElement("style")
@@ -67,7 +52,7 @@ export function FeaturedProducts() {
           </Link>
         </div>
         <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {featuredProducts.map((product, index) => (
+          {products.map((product, index) => (
             <Link
               key={product.id}
               href={`/product/${product.id}`}
@@ -105,12 +90,13 @@ export function FeaturedProducts() {
                 />
               </div>
               <div className="p-4">
-                <h3 className="font-medium line-clamp-1">{product.title}</h3>
-                <p className="mt-1 text-lg font-bold text-rose-500">{product.price.toLocaleString()}€</p>
-                <div className="mt-2 flex items-center text-sm text-gray-500">
-                  <MapPin className="mr-1 h-3.5 w-3.5" />
-                  <span className="line-clamp-1">{product.location}</span>
-                  <span className="ml-auto">{product.distance} km</span>
+                <h3 className="font-semibold">{product.title}</h3>
+                <div className="mt-2 flex items-center justify-between">
+                  <span className="text-lg font-bold">{product.price}€</span>
+                  <div className="flex items-center gap-1 text-sm text-gray-500">
+                    <MapPin className="h-4 w-4" />
+                    <span>{product.location}</span>
+                  </div>
                 </div>
               </div>
             </Link>

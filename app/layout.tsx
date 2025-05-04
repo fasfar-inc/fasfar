@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { CookieConsent } from "@/components/cookie-consent"
 import { NextAuthProvider } from "@/providers/session-provider"
 import { GeolocationProvider } from "@/components/geolocation-provider"
+import { Toaster } from 'sonner'
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -22,6 +23,7 @@ export default function RootLayout({
     <html lang="fr" suppressHydrationWarning>
       <head></head>
       <body className={inter.className}>
+        <Toaster />
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           <NextAuthProvider>
             <GeolocationProvider />

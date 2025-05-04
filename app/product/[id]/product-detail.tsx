@@ -45,14 +45,14 @@ import { calculateDistance } from "@/lib/utils"
 
 // Types pour le produit
 interface ProductImage {
-  id: number
-  productId: number
+  id: string
+  productId: string
   imageUrl: string
   isPrimary: boolean
 }
 
 interface ProductSeller {
-  id: number
+  id: string
   username: string
   email: string
   firstName?: string
@@ -68,7 +68,7 @@ interface ProductSeller {
 }
 
 interface ProductDetail {
-  id: number
+  id: string
   title: string
   description: string
   price: number
@@ -79,11 +79,11 @@ interface ProductDetail {
   longitude?: number
   createdAt: string
   updatedAt: string
-  sellerId: number
+  sellerId: string
   isActive: boolean
   isSold: boolean
   viewsCount: number
-  images: ProductImage[]
+  productImages: ProductImage[]
   seller: ProductSeller
   primaryImage?: string
   favoritesCount: number
@@ -152,7 +152,7 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
   const { toast } = useToast()
   const { latitude, longitude } = useGeolocation()
 
-  const [mainImage, setMainImage] = useState<string | null>(product.primaryImage || product.images[0]?.imageUrl || null)
+  const [mainImage, setMainImage] = useState<string | null>(product.primaryImage || product.productImages[0]?.imageUrl || null)
   const [isFavorite, setIsFavorite] = useState(false)
   const [zoomedImage, setZoomedImage] = useState<string | null>(null)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
@@ -169,7 +169,7 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
   const zoomedImageRef = useRef<HTMLDivElement>(null)
 
   // Vérifier si l'utilisateur est le propriétaire du produit
-  const isOwner = session?.user?.id && product.sellerId === Number.parseInt(session.user.id)
+  const isOwner = session?.user?.id && product.sellerId === session.user.id
 
   // Calculer la distance entre l'utilisateur et le produit
   const distance = useMemo(() => {
@@ -309,25 +309,25 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
   // Fonction pour naviguer entre les images en mode plein écran
   const navigateImages = useCallback(
     (direction: "next" | "prev") => {
-      if (!zoomedImage || !product.images) return
+      if (!zoomedImage || !product.productImages) return
 
       // Réinitialiser le zoom et la position lors du changement d'image
       setZoomLevel(1)
       setPosition2({ x: 0, y: 0 })
 
-      const currentIndex = product.images.findIndex((img) => img.imageUrl === zoomedImage)
+      const currentIndex = product.productImages.findIndex((img) => img.imageUrl === zoomedImage)
       let newIndex
 
       if (direction === "next") {
-        newIndex = (currentIndex + 1) % product.images.length
+        newIndex = (currentIndex + 1) % product.productImages.length
       } else {
-        newIndex = (currentIndex - 1 + product.images.length) % product.images.length
+        newIndex = (currentIndex - 1 + product.productImages.length) % product.productImages.length
       }
 
-      setZoomedImage(product.images[newIndex].imageUrl)
+      setZoomedImage(product.productImages[newIndex].imageUrl)
       setCurrentImageIndex(newIndex)
     },
-    [zoomedImage, product.images],
+    [zoomedImage, product.productImages],
   )
 
   // Fonctions de zoom
@@ -587,7 +587,7 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
 
             {/* Image counter */}
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/60 text-white px-3 py-1 rounded-full text-sm">
-              {currentImageIndex + 1} / {product.images.length}
+              {currentImageIndex + 1} / {product.productImages.length}
             </div>
 
             {/* Indicateur de zoom */}
@@ -625,7 +625,7 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
               />
             </div>
             <div className="flex space-x-2 overflow-x-auto pb-2">
-              {product.images.map((image, index) => (
+              {product.productImages.map((image, index) => (
                 <button
                   key={index}
                   onClick={() => setMainImage(image.imageUrl)}

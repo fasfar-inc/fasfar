@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { X, Upload, Star, StarOff } from "lucide-react"
 
 export interface UploadedImage {
+  id?: string
   file?: File
   preview: string
   isPrimary: boolean

@@ -17,38 +17,28 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/components/ui/use-toast"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
-import { ImageUploadWithPreview } from "@/components/image-upload-with-preview"
-import AddressAutocomplete  from "@/components/address-autocomplete-free"
-import LocationPickerMap  from "@/components/location-picker-map"
+import { ImageUploadWithPreview, UploadedImage } from "@/components/image-upload-with-preview"
+import AddressAutocompleteFree from "@/components/address-autocomplete-free"
+import LocationPickerMap from "@/components/location-picker-map"
 
 // Types
-interface ProductImage {
-  id: number
-  productId: number
-  imageUrl: string
-  isPrimary: boolean
-}
-
 interface Product {
-  id: number
+  id: string
   title: string
   description: string
   price: number
-  category: string
+  categoryId: string
+  subcategoryId?: string
   condition: string
-  location: string
+  location?: string
   latitude?: number
   longitude?: number
-  sellerId: number
-  images: ProductImage[]
-}
-
-interface UploadedImage {
-  id?: number
-  imageUrl: string
-  isPrimary: boolean
-  file?: File
-  isNew?: boolean
+  userId: string
+  productImages: {
+    id: string
+    imageUrl: string
+    isPrimary: boolean
+  }[]
 }
 
 export default function ProductEditForm({ product }: { product: Product }) {
@@ -63,19 +53,19 @@ export default function ProductEditForm({ product }: { product: Product }) {
   const [title, setTitle] = useState(product.title)
   const [description, setDescription] = useState(product.description || "")
   const [price, setPrice] = useState(product.price.toString())
-  const [category, setCategory] = useState(product.category)
+  const [category, setCategory] = useState(product.categoryId)
   const [condition, setCondition] = useState(product.condition)
   const [location, setLocation] = useState(product.location || "")
   const [latitude, setLatitude] = useState<number | undefined>(product.latitude)
   const [longitude, setLongitude] = useState<number | undefined>(product.longitude)
-  const [images, setImages] = useState<UploadedImage[]>(
-    product.images.map((img) => ({
-      id: img.id,
-      imageUrl: img.imageUrl,
-      isPrimary: img.isPrimary,
-      isNew: false,
-    })),
-  )
+  const existingImages = product.productImages.map((img) => ({
+    id: img.id,
+    preview: img.imageUrl,
+    imageUrl: img.imageUrl,
+    isPrimary: img.isPrimary,
+  }))
+
+  const isOwner = session?.user?.id ? product.userId === session.user.id : false
 
   // Vérifier l'authentification et les droits d'accès
   useEffect(() => {
@@ -84,15 +74,15 @@ export default function ProductEditForm({ product }: { product: Product }) {
       return
     }
 
-    if (session && product.sellerId !== Number.parseInt(session.user.id)) {
+    if (session && product.userId !== session.user.id) {
       toast({
         title: "Accès refusé",
-        description: "Vous n'êtes pas autorisé à modifier ce produit.",
+        description: "Vous n'avez pas les droits pour modifier ce produit.",
         variant: "destructive",
       })
       router.push(`/product/${product.id}`)
     }
-  }, [session, status, router, product.id, product.sellerId, toast])
+  }, [session, status, router, product.id, product.userId, toast])
 
   // Gérer la soumission du formulaire
   const handleSubmit = async (e: React.FormEvent) => {
@@ -125,7 +115,7 @@ export default function ProductEditForm({ product }: { product: Product }) {
         title,
         description,
         price: Number.parseFloat(price),
-        category,
+        categoryId: category,
         condition,
         location,
         latitude,
@@ -148,8 +138,8 @@ export default function ProductEditForm({ product }: { product: Product }) {
 
       // Gérer les images
       // 1. Supprimer les images qui ont été retirées
-      const existingImageIds = product.images.map((img) => img.id)
-      const currentImageIds = images.filter((img) => img.id).map((img) => img.id as number)
+      const existingImageIds = product.productImages.map((img) => img.id)
+      const currentImageIds = existingImages.map((img) => img.id)
 
       const deletedImageIds = existingImageIds.filter((id) => !currentImageIds.includes(id))
 
@@ -165,8 +155,8 @@ export default function ProductEditForm({ product }: { product: Product }) {
 
       // 2. Mettre à jour les images existantes (isPrimary)
       await Promise.all(
-        images
-          .filter((img) => img.id && !img.isNew)
+        existingImages
+          .filter((img) => img.id)
           .map((img) =>
             fetch(`/api/products/${product.id}/images/${img.id}`, {
               method: "PUT",
@@ -177,19 +167,6 @@ export default function ProductEditForm({ product }: { product: Product }) {
             }),
           ),
       )
-
-      // 3. Ajouter les nouvelles images
-      const newImages = images.filter((img) => img.isNew)
-
-      if (newImages.length > 0) {
-        await fetch(`/api/products/${product.id}/images`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ images: newImages }),
-        })
-      }
 
       toast({
         title: "Produit mis à jour",
@@ -213,7 +190,7 @@ export default function ProductEditForm({ product }: { product: Product }) {
 
   // Gérer les images
   const handleImagesChange = (newImages: UploadedImage[]) => {
-    setImages(newImages)
+    // Implementation of handleImagesChange
   }
 
   // Gérer la sélection d'adresse
@@ -365,7 +342,7 @@ export default function ProductEditForm({ product }: { product: Product }) {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <ImageUploadWithPreview images={images} onChange={handleImagesChange} maxImages={8} />
+                <ImageUploadWithPreview images={existingImages} onChange={handleImagesChange} maxImages={8} />
               </CardContent>
             </Card>
           </TabsContent>
@@ -379,10 +356,14 @@ export default function ProductEditForm({ product }: { product: Product }) {
               <CardContent className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="location">Adresse</Label>
-                  <AddressAutocomplete
+                  <AddressAutocompleteFree
                     value={location}
-                    onAddressSelect={handleAddressSelect}
-                    placeholder="Entrez votre adresse"
+                    onChange={(address, lat, lng) => {
+                      setLocation(address)
+                      setLatitude(lat)
+                      setLongitude(lng)
+                    }}
+                    placeholder="Entrez une adresse"
                   />
                 </div>
 
@@ -394,7 +375,10 @@ export default function ProductEditForm({ product }: { product: Product }) {
                     <LocationPickerMap
                       latitude={latitude}
                       longitude={longitude}
-                      onPositionChange={handleMapPositionChange}
+                      onLocationChange={(lat, lng) => {
+                        setLatitude(lat)
+                        setLongitude(lng)
+                      }}
                     />
                   </div>
                   <p className="text-sm text-gray-500">

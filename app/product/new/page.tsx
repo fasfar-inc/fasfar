@@ -139,6 +139,40 @@ export default function NewProductPage() {
     }
   }
 
+  const handleGetCurrentLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords
+          // Use reverse geocoding to get the address
+          fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`)
+            .then(response => response.json())
+            .then(data => {
+              const address = data.display_name || "Current Location"
+              handleLocationChange(latitude, longitude, address)
+            })
+            .catch(() => {
+              handleLocationChange(latitude, longitude, "Current Location")
+            })
+        },
+        (error) => {
+          console.error("Error getting location:", error)
+          toast({
+            title: "Error",
+            description: "Could not get your current location",
+            variant: "destructive"
+          })
+        }
+      )
+    } else {
+      toast({
+        title: "Error",
+        description: "Geolocation is not supported by your browser",
+        variant: "destructive"
+      })
+    }
+  }
+
   const validateStep = () => {
     const newErrors: Record<string, string> = {}
 
@@ -582,14 +616,30 @@ export default function NewProductPage() {
             {/* Étape 3: Localisation */}
             <div className={currentStep === 2 ? "block" : "hidden"}>
               <div className="space-y-6">
-                <AddressAutocompleteFree
-                  value={formData.location}
-                  onChange={handleAddressChange}
-                  label="Localisation du produit"
-                  placeholder="Entrez l'adresse où se trouve le produit"
-                  required
-                  onValidationChange={setAddressIsValid}
-                />
+                <div className="space-y-2">
+                  <AddressAutocompleteFree
+                    value={formData.location}
+                    onChange={handleAddressChange}
+                    label="Localisation du produit"
+                    placeholder="Entrez l'adresse où se trouve le produit"
+                    required
+                    onValidationChange={setAddressIsValid}
+                  />
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="h-px flex-1 bg-border" />
+                    <span>or</span>
+                    <div className="h-px flex-1 bg-border" />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    onClick={handleGetCurrentLocation}
+                  >
+                    <MapPin className="h-4 w-4 mr-2" />
+                    Use my current location
+                  </Button>
+                </div>
                 {errors.location && <p className="text-red-500 text-sm mt-1">{errors.location}</p>}
 
                 {formData.latitude && formData.longitude ? (

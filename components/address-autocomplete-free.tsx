@@ -195,33 +195,16 @@ export default function AddressAutocompleteFree({
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </Label>
-      <div className="flex mt-1.5">
-        <Input
-          ref={inputRef}
-          id="address"
-          value={value}
-          onChange={handleInputChange}
-          placeholder={placeholder}
-          className="rounded-r-none"
-          onFocus={() => value.length > 2 && setShowSuggestions(suggestions.length > 0)}
-          required={required}
-        />
-        <Button
-          type="button"
-          variant="default"
-          className="rounded-l-none border-l-0 bg-rose-500 hover:bg-rose-600"
-          onClick={handleUseCurrentLocation}
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <>
-              <MapPin className="h-4 w-4 mr-2" /> Ma position
-            </>
-          )}
-        </Button>
-      </div>
+      <Input
+        ref={inputRef}
+        id="address"
+        value={value}
+        onChange={handleInputChange}
+        placeholder={placeholder}
+        className="w-full"
+        onFocus={() => value.length > 2 && setShowSuggestions(suggestions.length > 0)}
+        required={required}
+      />
 
       {showWarning && (
         <Alert variant="destructive" className="mt-2">

@@ -3,12 +3,14 @@
 import { useState } from "react"
 import Link from "next/link"
 import { ShoppingBag, MapPin } from "lucide-react"
+import { useSession } from "next-auth/react"
 
 import { Button } from "@/components/ui/button"
 import { AuthStatus } from "@/components/auth-status"
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { data: session } = useSession()
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -31,6 +33,11 @@ export function Header() {
             <Link href="/messages" className="text-sm font-medium transition-colors hover:text-rose-500">
               Messages
             </Link>
+            {session?.user?.role === "ADMIN" && (
+              <Link href="/admin" className="text-sm font-medium transition-colors hover:text-rose-500">
+                Admin
+              </Link>
+            )}
           </nav>
           <div className="flex items-center space-x-2">
             <AuthStatus />
@@ -98,6 +105,11 @@ export function Header() {
               <Link href="/categories" className="text-lg font-medium" onClick={() => setMobileMenuOpen(false)}>
                 Catégories
               </Link>
+              {session?.user?.role === "ADMIN" && (
+                <Link href="/admin" className="text-lg font-medium" onClick={() => setMobileMenuOpen(false)}>
+                  Admin
+                </Link>
+              )}
               <div className="pt-4 border-t">
                 <div className="flex flex-col gap-3">
                   <Link href="/login" onClick={() => setMobileMenuOpen(false)}>

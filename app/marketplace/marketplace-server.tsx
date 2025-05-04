@@ -111,7 +111,13 @@ export default async function MarketplaceServer({ searchParams }: MarketplaceSer
           },
         },
       },
-      images: true,
+      images: {
+        select: {
+          id: true,
+          imageUrl: true,
+          isPrimary: true,
+        },
+      },
       _count: {
         select: {
           favorites: true,

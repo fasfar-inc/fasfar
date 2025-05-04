@@ -116,3 +116,61 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: "Failed to mark notifications as read" }, { status: 500 })
   }
 }
+
+export async function GET_last_7_days() {
+  try {
+    const session = await getServerSession(authOptions)
+
+    if (!session) {
+      return new NextResponse("Unauthorized", { status: 401 })
+    }
+
+    // Get notifications for the last 7 days
+    const sevenDaysAgo = new Date()
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+
+    const notifications = await prisma.notification.findMany({
+      where: {
+        userId: session.user.id,
+        createdAt: {
+          gte: sevenDaysAgo,
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 10, // Limit to 10 most recent notifications
+    })
+
+    return NextResponse.json(notifications)
+  } catch (error) {
+    console.error("[NOTIFICATIONS_GET]", error)
+    return new NextResponse("Internal error", { status: 500 })
+  }
+}
+
+export async function PUT() {
+  try {
+    const session = await getServerSession(authOptions)
+
+    if (!session) {
+      return new NextResponse("Unauthorized", { status: 401 })
+    }
+
+    // Mark all notifications as read
+    await prisma.notification.updateMany({
+      where: {
+        userId: session.user.id,
+        read: false,
+      },
+      data: {
+        read: true,
+      },
+    })
+
+    return new NextResponse("OK")
+  } catch (error) {
+    console.error("[NOTIFICATIONS_PUT]", error)
+    return new NextResponse("Internal error", { status: 500 })
+  }
+}

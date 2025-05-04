@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { prisma } from "@/lib/prisma"
 import type { ProductFilterInput } from "@/lib/types"
-import { ProductCategory, ProductCondition } from "@prisma/client"
+import { ProductCondition } from "@prisma/client"
 
 // GET /api/products - Récupérer tous les produits avec filtres
 export async function GET(request: NextRequest) {
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Calcul de la pagination
-    const skip = (filters.page - 1) * filters.limit
+    const skip = ((filters.page || 1) - 1) * (filters.limit || 10)
 
     // Déterminer l'ordre de tri
     let orderBy: any = {}
@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
       where,
       orderBy,
       skip,
-      take: filters.limit,
+      take: filters.limit || 10,
       include: {
         seller: {
           select: {
@@ -139,9 +139,9 @@ export async function GET(request: NextRequest) {
       products: formattedProducts,
       pagination: {
         total: totalProducts,
-        page: filters.page,
-        limit: filters.limit,
-        pages: Math.ceil(totalProducts / filters.limit),
+        page: filters.page || 1,
+        limit: filters.limit || 10,
+        pages: Math.ceil(totalProducts / (filters.limit || 10)),
       },
     })
   } catch (error) {
@@ -190,49 +190,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Valid price is required" }, { status: 400 })
     }
 
-    // Vérifier que la catégorie est valide selon l'enum ProductCategory
-    if (!data.category || !Object.values(ProductCategory).includes(data.category)) {
-      console.error("Catégorie invalide:", data.category)
-      console.log("Catégories valides:", Object.values(ProductCategory))
-      return NextResponse.json(
-        {
-          error: "Invalid category",
-          validCategories: Object.values(ProductCategory),
-        },
-        { status: 400 },
-      )
+    // Vérifier que la catégorie existe
+    if (!data.categoryId) {
+      return NextResponse.json({ error: "Category is required" }, { status: 400 })
     }
 
-    // Vérifier que la condition est valide selon l'enum ProductCondition
-    if (!data.condition || !Object.values(ProductCondition).includes(data.condition)) {
-      console.error("Condition invalide:", data.condition)
-      console.log("Conditions valides:", Object.values(ProductCondition))
-      return NextResponse.json(
-        {
-          error: "Invalid condition",
-          validConditions: Object.values(ProductCondition),
-        },
-        { status: 400 },
-      )
-    }
+    const category = await prisma.category.findUnique({
+      where: { id: data.categoryId },
+    })
 
-    // Vérifier les URLs des images
-    if (data.images && Array.isArray(data.images)) {
-      const invalidImages = data.images.filter((img: any) => img.imageUrl && img.imageUrl.startsWith("blob:"))
-
-      if (invalidImages.length > 0) {
-        console.error(
-          "URLs d'images blob détectées:",
-          invalidImages.map((img: any) => img.imageUrl),
-        )
-        return NextResponse.json(
-          {
-            error: "Invalid image URLs. Blob URLs cannot be stored directly.",
-            details: "You need to upload the images to a storage service first.",
-          },
-          { status: 400 },
-        )
-      }
+    if (!category) {
+      return NextResponse.json({ error: "Invalid category" }, { status: 400 })
     }
 
     try {
@@ -242,7 +210,7 @@ export async function POST(request: NextRequest) {
           title: data.title,
           description: data.description || "",
           price: Number.parseFloat(data.price.toString()),
-          category: data.category as ProductCategory,
+          categoryId: data.categoryId,
           condition: data.condition as ProductCondition,
           location: data.location || "",
           latitude: data.latitude || null,
@@ -258,7 +226,7 @@ export async function POST(request: NextRequest) {
         try {
           // Préparer les données d'images
           const imageData = data.images
-            .map((image: any, index: number) => {
+            .map((image: { imageUrl: string; isPrimary?: boolean }, index: number) => {
               if (!image.imageUrl || image.imageUrl.startsWith("blob:")) {
                 console.warn(`Image sans URL valide à l'index ${index}`)
                 return null
@@ -273,7 +241,7 @@ export async function POST(request: NextRequest) {
 
           if (imageData.length > 0) {
             // S'assurer qu'il y a au moins une image principale
-            const hasPrimary = imageData.some((img) => img.isPrimary)
+            const hasPrimary = imageData.some((img: { isPrimary?: boolean }) => img.isPrimary)
             if (!hasPrimary && imageData.length > 0) {
               imageData[0].isPrimary = true
             }
@@ -332,7 +300,10 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Fonction utilitaire pour calculer la distance entre deux points géographiques
+function deg2rad(deg: number): number {
+  return deg * (Math.PI / 180)
+}
+
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371 // Rayon de la Terre en km
   const dLat = deg2rad(lat2 - lat1)
@@ -341,10 +312,6 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2)
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-  const distance = R * c // Distance en km
-  return Math.round(distance * 10) / 10 // Arrondi à 1 décimale
-}
-
-function deg2rad(deg: number): number {
-  return deg * (Math.PI / 180)
+  const distance = R * c
+  return Math.round(distance * 100) / 100 // Arrondir à 2 décimales
 }
