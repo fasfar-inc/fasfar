@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 
 interface GeolocationState {
   latitude: number | null
@@ -9,7 +9,8 @@ interface GeolocationState {
   loading: boolean
 }
 
-export function useGeolocation() {
+// Ajouter une option pour forcer le rafraîchissement de la position
+export function useGeolocation(options?: { forceRefresh?: boolean }) {
   const [state, setState] = useState<GeolocationState>({
     latitude: null,
     longitude: null,
@@ -17,7 +18,7 @@ export function useGeolocation() {
     loading: true,
   })
 
-  const getPosition = () => {
+  const getPosition = useCallback(() => {
     setState((prev) => ({ ...prev, loading: true }))
 
     if (navigator.geolocation) {
@@ -25,9 +26,10 @@ export function useGeolocation() {
         (position) => {
           const { latitude, longitude } = position.coords
 
-          // Sauvegarder dans localStorage
+          // Sauvegarder dans localStorage avec un timestamp
           localStorage.setItem("user-latitude", latitude.toString())
           localStorage.setItem("user-longitude", longitude.toString())
+          localStorage.setItem("geolocation-timestamp", Date.now().toString())
 
           // Mettre à jour les cookies pour le serveur
           document.cookie = `user-latitude=${latitude}; path=/; max-age=86400`
@@ -41,12 +43,31 @@ export function useGeolocation() {
           })
         },
         (error) => {
+          let errorMessage = "Erreur de géolocalisation."
+
+          switch (error.code) {
+            case error.PERMISSION_DENIED:
+              errorMessage = "Vous avez refusé l'accès à votre position."
+              break
+            case error.POSITION_UNAVAILABLE:
+              errorMessage = "Les informations de localisation ne sont pas disponibles."
+              break
+            case error.TIMEOUT:
+              errorMessage = "La demande de localisation a expiré."
+              break
+          }
+
           setState({
             latitude: null,
             longitude: null,
-            error: error.message,
+            error: errorMessage,
             loading: false,
           })
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0,
         },
       )
     } else {
@@ -57,14 +78,21 @@ export function useGeolocation() {
         loading: false,
       })
     }
-  }
+  }, [])
 
   useEffect(() => {
+    // Vérifier si on doit forcer le rafraîchissement
+    const forceRefresh = options?.forceRefresh || false
+
     // Essayer d'abord de récupérer depuis localStorage
     const storedLat = localStorage.getItem("user-latitude")
     const storedLng = localStorage.getItem("user-longitude")
+    const timestamp = localStorage.getItem("geolocation-timestamp")
 
-    if (storedLat && storedLng) {
+    // Vérifier si les données sont récentes (moins de 30 minutes)
+    const isRecent = timestamp && Date.now() - Number(timestamp) < 30 * 60 * 1000
+
+    if (storedLat && storedLng && isRecent && !forceRefresh) {
       setState({
         latitude: Number.parseFloat(storedLat),
         longitude: Number.parseFloat(storedLng),
@@ -76,10 +104,10 @@ export function useGeolocation() {
       document.cookie = `user-latitude=${storedLat}; path=/; max-age=86400`
       document.cookie = `user-longitude=${storedLng}; path=/; max-age=86400`
     } else {
-      // Si pas dans localStorage, essayer de récupérer via l'API Geolocation
+      // Si pas dans localStorage ou données trop anciennes, essayer de récupérer via l'API Geolocation
       getPosition()
     }
-  }, [])
+  }, [getPosition, options?.forceRefresh])
 
   return { ...state, getPosition }
 }

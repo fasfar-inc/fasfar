@@ -4,15 +4,24 @@ import { useEffect, useRef, useState } from "react"
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
 
-// Définir les types pour les produits
+// Mettre à jour l'interface Product pour correspondre à celle de la page map
 interface Product {
   id: number
   title: string
   price: number
   location: string
   category: string
-  image: string
+  primaryImage: string | null
+  latitude: number | null
+  longitude: number | null
   coordinates: [number, number] // [latitude, longitude]
+  distance: number | null
+  seller?: {
+    id: number
+    username: string
+    profileImage: string | null
+  }
+  createdAt?: string
 }
 
 interface LeafletMapComponentProps {
@@ -174,6 +183,9 @@ export function LeafletMapComponent({
       // Ajouter les nouveaux marqueurs
       if (mapRef.current) {
         products.forEach((product) => {
+          // Vérifier que les coordonnées sont valides
+          if (!product.latitude || !product.longitude) return
+
           const isSelected = product.id === selectedProduct
           const color = categoryColors[product.category] || "#f43f5e" // Rose par défaut
 
@@ -207,7 +219,8 @@ export function LeafletMapComponent({
             popupAnchor: [0, -30],
           })
 
-          // Créer le contenu du popup
+          // Modifier la partie qui crée le contenu du popup
+          // Chercher la variable popupContent et remplacer par:
           const popupContent = `
             <div class="text-center p-1">
               <h3 class="font-medium text-sm">${product.title}</h3>
@@ -215,6 +228,7 @@ export function LeafletMapComponent({
               <div class="flex items-center justify-center text-xs text-gray-500 mt-1">
                 <span class="mr-1">📍</span>
                 <span>${product.location}</span>
+                ${product.distance !== null ? `<span class="ml-1">(${product.distance < 1 ? `${Math.round(product.distance * 1000)} m` : `${product.distance.toFixed(1)} km`})</span>` : ""}
               </div>
               <a href="/product/${product.id}" class="text-xs text-rose-500 hover:underline block mt-2">
                 Voir le produit
@@ -224,7 +238,9 @@ export function LeafletMapComponent({
 
           // Ajouter le marqueur à la carte
           try {
-            const marker = L.marker(product.coordinates, { icon }).addTo(mapRef.current).bindPopup(popupContent)
+            const marker = L.marker([product.latitude, product.longitude], { icon })
+              .addTo(mapRef.current)
+              .bindPopup(popupContent)
 
             // Ajouter un gestionnaire d'événements pour le clic sur le marqueur
             marker.on("click", () => {

@@ -1,36 +1,17 @@
 "use client"
 
-import type React from "react"
-
 import { useState, useEffect, useCallback } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import dynamic from "next/dynamic"
-import {
-  ArrowLeft,
-  Search,
-  SlidersHorizontal,
-  MapPin,
-  X,
-  Home,
-  Car,
-  Smartphone,
-  Laptop,
-  Utensils,
-  Shirt,
-  Dumbbell,
-  Flower,
-  AlertCircle,
-} from "lucide-react"
+import axios from "axios"
+import { ArrowLeft, MapPin, AlertCircle } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Slider } from "@/components/ui/slider"
-import { Badge } from "@/components/ui/badge"
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Footer } from "@/components/footer"
 import { Header } from "@/components/header"
 import { GeolocationRequest } from "@/components/geolocation-request"
+import { ProductFilters, type FilterValues } from "@/components/product-filters"
 
 // Import dynamique du composant de carte pour éviter les erreurs de rendu côté serveur
 const LeafletMapComponent = dynamic(
@@ -48,289 +29,194 @@ const LeafletMapComponent = dynamic(
   },
 )
 
-// Composant pour afficher l'icône dynamiquement
-const CategoryIcon = ({ category }: { category: string }) => {
-  switch (category) {
-    case "real-estate":
-      return <Home className="h-5 w-5" />
-    case "vehicles":
-      return <Car className="h-5 w-5" />
-    case "phones":
-      return <Smartphone className="h-5 w-5" />
-    case "digital-devices":
-      return <Laptop className="h-5 w-5" />
-    case "home-kitchen":
-      return <Utensils className="h-5 w-5" />
-    case "fashion":
-      return <Shirt className="h-5 w-5" />
-    case "sports":
-      return <Dumbbell className="h-5 w-5" />
-    case "garden":
-      return <Flower className="h-5 w-5" />
-    default:
-      return <Home className="h-5 w-5" />
+interface Product {
+  id: number
+  title: string
+  price: number
+  location: string
+  category: string
+  primaryImage: string | null
+  coordinates: [number, number] // [latitude, longitude]
+  distance: number | null
+  seller: {
+    id: number
+    username: string
+    profileImage: string | null
   }
+  createdAt: string
+  latitude: number | null
+  longitude: number | null
 }
 
-const categories = [
-  { id: "real-estate", name: "Immobilier", icon: "real-estate" },
-  { id: "vehicles", name: "Véhicules", icon: "vehicles" },
-  { id: "phones", name: "Téléphones", icon: "phones" },
-  { id: "digital-devices", name: "Appareils numériques", icon: "digital-devices" },
-  { id: "home-kitchen", name: "Maison et Cuisine", icon: "home-kitchen" },
-  { id: "fashion", name: "Mode", icon: "fashion" },
-  { id: "sports", name: "Sports & Loisirs", icon: "sports" },
-  { id: "garden", name: "Jardin", icon: "garden" },
-]
-
-// Données fictives de produits avec coordonnées géographiques
-const products = [
-  {
-    id: 1,
-    title: "iPhone 16 Pro - 256GB",
-    price: 999,
-    location: "Paris, 75001",
-    distance: 2.4,
-    category: "phones",
-    image: "/placeholder.svg?height=300&width=300",
-    seller: { name: "Marie D.", rating: 4.8 },
-    date: "Il y a 2 jours",
-    coordinates: [48.8566, 2.3522], // Paris
-  },
-  {
-    id: 2,
-    title: "Appartement 2 pièces - 45m²",
-    price: 295000,
-    location: "Lyon, 69002",
-    distance: 1.8,
-    category: "real-estate",
-    image: "/placeholder.svg?height=300&width=300",
-    seller: { name: "Thomas L.", rating: 4.9 },
-    date: "Il y a 5 jours",
-    coordinates: [45.7578, 4.832], // Lyon
-  },
-  {
-    id: 3,
-    title: "Renault Clio 2022 - 15000km",
-    price: 14500,
-    location: "Marseille, 13008",
-    distance: 3.5,
-    category: "vehicles",
-    image: "/placeholder.svg?height=300&width=300",
-    seller: { name: "Sophie M.", rating: 4.7 },
-    date: "Aujourd'hui",
-    coordinates: [43.2965, 5.3698], // Marseille
-  },
-  {
-    id: 4,
-    title: "MacBook Air M3 - 512GB",
-    price: 1299,
-    location: "Bordeaux, 33000",
-    distance: 0.9,
-    category: "digital-devices",
-    image: "/placeholder.svg?height=300&width=300",
-    seller: { name: "Pierre D.", rating: 4.6 },
-    date: "Il y a 1 jour",
-    coordinates: [44.8378, -0.5792], // Bordeaux
-  },
-  {
-    id: 5,
-    title: "Robot Cuisine Multifonction",
-    price: 349,
-    location: "Toulouse, 31000",
-    distance: 4.2,
-    category: "home-kitchen",
-    image: "/placeholder.svg?height=300&width=300",
-    seller: { name: "Julie R.", rating: 4.9 },
-    date: "Il y a 3 jours",
-    coordinates: [43.6047, 1.4442], // Toulouse
-  },
-  {
-    id: 6,
-    title: "Samsung Galaxy S24 Ultra",
-    price: 1199,
-    location: "Lille, 59000",
-    distance: 1.5,
-    category: "phones",
-    image: "/placeholder.svg?height=300&width=300",
-    seller: { name: "Nicolas B.", rating: 4.7 },
-    date: "Il y a 4 jours",
-    coordinates: [50.6292, 3.0573], // Lille
-  },
-  {
-    id: 7,
-    title: "Maillot de bain homme",
-    price: 29,
-    location: "Nice, 06000",
-    distance: 2.1,
-    category: "fashion",
-    image: "/placeholder.svg?height=300&width=300",
-    seller: { name: "Léa S.", rating: 4.5 },
-    date: "Il y a 2 jours",
-    coordinates: [43.7102, 7.262], // Nice
-  },
-  {
-    id: 8,
-    title: "Raquette de tennis Wilson",
-    price: 89,
-    location: "Strasbourg, 67000",
-    distance: 3.7,
-    category: "sports",
-    image: "/placeholder.svg?height=300&width=300",
-    seller: { name: "Marc T.", rating: 4.8 },
-    date: "Il y a 1 semaine",
-    coordinates: [48.5734, 7.7521], // Strasbourg
-  },
-]
-
 export default function MapPage() {
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
-  const [distance, setDistance] = useState(1000) // Distance en km (augmentée à 1000km)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [activeFilters, setActiveFilters] = useState(0)
+  const [showExpandedFilters, setShowExpandedFilters] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<number | null>(null)
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null)
   const [locationError, setLocationError] = useState<string | null>(null)
   const [showGeolocationRequest, setShowGeolocationRequest] = useState(true)
   const [isRequestingLocation, setIsRequestingLocation] = useState(false)
-  const [filteredProducts, setFilteredProducts] = useState(products)
+  const [products, setProducts] = useState<Product[]>([])
+  const [isLoading, setIsLoading] = useState(false)
 
-  // Fonction pour demander la géolocalisation
-  const requestGeolocation = useCallback(() => {
-    setIsRequestingLocation(true)
+  // État pour les filtres
+  const [filters, setFilters] = useState<FilterValues>({
+    search: "",
+    category: "",
+    condition: "",
+    minPrice: "",
+    maxPrice: "",
+    distance: 50,
+    sortBy: "date_desc",
+  })
 
-    if (typeof navigator !== "undefined" && navigator.geolocation) {
-      try {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            setUserLocation([position.coords.latitude, position.coords.longitude])
-            setLocationError(null)
-            setIsRequestingLocation(false)
+  // Ajouter cette fonction pour charger les produits
+  const loadProducts = useCallback(async () => {
+    try {
+      setIsLoading(true)
 
-            // Sauvegarder le consentement à la géolocalisation
-            localStorage.setItem("geolocation-consent", "granted")
-          },
-          (err) => {
-            setIsRequestingLocation(false)
+      // Construire les paramètres de requête
+      const params = new URLSearchParams()
 
-            // Messages d'erreur plus spécifiques
-            let errorMessage = "La localisation précise n'est pas disponible."
-
-            switch (err.code) {
-              case err.PERMISSION_DENIED:
-                errorMessage =
-                  "Vous avez refusé l'accès à votre position. Veuillez l'activer dans les paramètres de votre navigateur."
-                break
-              case err.POSITION_UNAVAILABLE:
-                errorMessage = "Les informations de localisation ne sont pas disponibles."
-                break
-              case err.TIMEOUT:
-                errorMessage = "La demande de localisation a expiré."
-                break
-            }
-
-            setLocationError(errorMessage)
-            // Position par défaut (centre de la France)
-            setUserLocation([46.603354, 1.888334])
-
-            // Sauvegarder le refus de géolocalisation
-            localStorage.setItem("geolocation-consent", "denied")
-          },
-          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
-        )
-      } catch (error) {
-        setIsRequestingLocation(false)
-        setLocationError("Une erreur s'est produite lors de la géolocalisation.")
-        setUserLocation([46.603354, 1.888334]) // Position par défaut
+      if (filters.search) {
+        params.append("search", filters.search)
       }
-    } else {
-      setIsRequestingLocation(false)
-      setLocationError("La géolocalisation n'est pas supportée par votre navigateur.")
-      setUserLocation([46.603354, 1.888334]) // Position par défaut
+
+      if (filters.category) {
+        params.append("category", filters.category)
+      }
+
+      if (filters.condition) {
+        params.append("condition", filters.condition)
+      }
+
+      if (filters.minPrice) {
+        params.append("minPrice", filters.minPrice)
+      }
+
+      if (filters.maxPrice) {
+        params.append("maxPrice", filters.maxPrice)
+      }
+
+      if (filters.distance < 1000) {
+        params.append("distance", filters.distance.toString())
+      }
+
+      if (filters.sortBy) {
+        params.append("sortBy", filters.sortBy)
+      }
+
+      if (userLocation) {
+        params.append("latitude", userLocation[0].toString())
+        params.append("longitude", userLocation[1].toString())
+      }
+
+      const response = await axios.get(`/api/products/map?${params.toString()}`)
+
+      // Transformer les données pour correspondre à l'interface Product
+      const productsData = response.data.map((product: any) => ({
+        ...product,
+        coordinates: [product.latitude || 0, product.longitude || 0] as [number, number],
+        image: product.primaryImage || "/placeholder.svg?height=300&width=300",
+      }))
+
+      setProducts(productsData)
+    } catch (error) {
+      console.error("Erreur lors du chargement des produits:", error)
+    } finally {
+      setIsLoading(false)
     }
-  }, [])
+  }, [filters, userLocation])
 
-  // Vérifier le consentement à la géolocalisation au chargement
+  // Ajouter cet effet pour charger les produits lorsque les filtres changent
   useEffect(() => {
-    // Vérifier si l'utilisateur a déjà donné son consentement pour la géolocalisation
-    const geolocationConsent = localStorage.getItem("geolocation-consent")
+    loadProducts()
+  }, [loadProducts])
 
-    if (geolocationConsent === "granted") {
-      // Si l'utilisateur a déjà accepté, demander directement la géolocalisation
-      requestGeolocation()
-      setShowGeolocationRequest(false)
-    } else if (geolocationConsent === "denied") {
-      // Si l'utilisateur a déjà refusé, ne pas afficher la popup
-      setShowGeolocationRequest(false)
-      setUserLocation([46.603354, 1.888334]) // Position par défaut
-      setLocationError("Vous avez précédemment refusé la géolocalisation.")
-    }
-    // Sinon, la popup de demande de géolocalisation sera affichée (showGeolocationRequest est true par défaut)
-  }, [requestGeolocation])
-
-  // Calculer le nombre de filtres actifs
-  useEffect(() => {
-    let count = 0
-    if (selectedCategories.length > 0) count++
-    if (distance < 1000) count++
-    if (searchQuery) count++
-
-    setActiveFilters(count)
-  }, [selectedCategories, distance, searchQuery])
-
-  // Filtrer les produits lorsque les filtres changent
-  useEffect(() => {
-    const filtered = products.filter((product) => {
-      // Filtre par recherche
-      if (searchQuery && !product.title.toLowerCase().includes(searchQuery.toLowerCase())) {
-        return false
-      }
-      // Filtre par catégorie
-      if (selectedCategories.length > 0 && !selectedCategories.includes(product.category)) {
-        return false
-      }
-      // Filtre par distance (à implémenter avec de vraies coordonnées)
-      // Pour l'instant, on utilise simplement la propriété distance du produit
-      if (distance < 1000 && product.distance > distance / 100) {
-        return false
-      }
-      return true
-    })
-
-    setFilteredProducts(filtered)
-  }, [selectedCategories, distance, searchQuery])
-
+  // Remplacer la fonction handleGeolocationAccept par celle-ci
   const handleGeolocationAccept = (position: [number, number]) => {
     setUserLocation(position)
     setLocationError(null)
     setShowGeolocationRequest(false)
     localStorage.setItem("geolocation-consent", "granted")
+
+    // Recharger les produits avec la nouvelle position
+    loadProducts()
   }
 
+  // Remplacer la fonction handleGeolocationDecline par celle-ci
   const handleGeolocationDecline = () => {
     setShowGeolocationRequest(false)
     setUserLocation([46.603354, 1.888334]) // Position par défaut
     setLocationError("Vous avez refusé la géolocalisation. La carte affiche tous les produits disponibles en France.")
     localStorage.setItem("geolocation-consent", "denied")
+
+    // Charger les produits sans filtrage par distance
+    loadProducts()
   }
 
-  const toggleCategory = (categoryId: string) => {
-    setSelectedCategories((prev) =>
-      prev.includes(categoryId) ? prev.filter((id) => id !== categoryId) : [...prev, categoryId],
+  // Gérer les changements de filtres
+  const handleFilterChange = useCallback((newFilters: FilterValues) => {
+    setFilters((prev) => {
+      // Vérifier si les filtres ont réellement changé
+      if (JSON.stringify(prev) === JSON.stringify(newFilters)) {
+        return prev // Retourner l'état précédent si aucun changement
+      }
+      return newFilters
+    })
+  }, [])
+
+  // Réinitialiser les filtres
+  const resetFilters = () => {
+    setFilters({
+      search: "",
+      category: "",
+      condition: "",
+      minPrice: "",
+      maxPrice: "",
+      distance: 50,
+      sortBy: "date_desc",
+    })
+
+    // Recharger les produits sans filtres
+    setTimeout(() => {
+      loadProducts()
+    }, 100)
+  }
+
+  // Formater la date relative
+  const formatRelativeDate = (dateString: string) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffTime = Math.abs(now.getTime() - date.getTime())
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+
+    if (diffDays === 0) return "Aujourd'hui"
+    if (diffDays === 1) return "Hier"
+    if (diffDays < 7) return `Il y a ${diffDays} jours`
+    if (diffDays < 30) return `Il y a ${Math.floor(diffDays / 7)} semaine${Math.floor(diffDays / 7) > 1 ? "s" : ""}`
+    if (diffDays < 365) return `Il y a ${Math.floor(diffDays / 30)} mois`
+    return `Il y a ${Math.floor(diffDays / 365)} an${Math.floor(diffDays / 365) > 1 ? "s" : ""}`
+  }
+
+  const requestGeolocation = () => {
+    setIsRequestingLocation(true)
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        handleGeolocationAccept([position.coords.latitude, position.coords.longitude])
+        setIsRequestingLocation(false)
+      },
+      (error) => {
+        console.error("Error getting geolocation:", error)
+        setLocationError("Impossible de récupérer votre position. Veuillez réessayer ou autoriser la géolocalisation.")
+        setIsRequestingLocation(false)
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0,
+      },
     )
   }
-
-  const resetFilters = () => {
-    setSelectedCategories([])
-    setDistance(1000)
-    setSearchQuery("")
-  }
-
-  // Fonction pour gérer la recherche avec debounce
-  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    setSearchQuery(value)
-  }, [])
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -347,206 +233,48 @@ export default function MapPage() {
             <ArrowLeft className="mr-2 h-4 w-4" />
             Retour à l'accueil
           </Link>
-          <div className="flex items-center gap-2">
-            <div className="relative hidden md:block w-[300px]">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
-              <Input
-                type="search"
-                placeholder="Rechercher des produits..."
-                className="pl-10 pr-4"
-                value={searchQuery}
-                onChange={handleSearchChange}
-              />
+        </div>
+
+        {locationError && (
+          <div className="mt-2 mb-4 p-2 bg-blue-50 border border-blue-200 rounded-md text-blue-700 text-sm flex items-center justify-between">
+            <div className="flex items-center">
+              <AlertCircle className="h-4 w-4 mr-2 flex-shrink-0" />
+              <p>{locationError}</p>
             </div>
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="outline" size="icon" className="relative">
-                  <SlidersHorizontal className="h-4 w-4" />
-                  {activeFilters > 0 && (
-                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white">
-                      {activeFilters}
-                    </span>
-                  )}
-                  <span className="sr-only">Filtres</span>
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right">
-                <SheetHeader>
-                  <SheetTitle>Filtres</SheetTitle>
-                  <SheetDescription>Affinez votre recherche avec les filtres</SheetDescription>
-                </SheetHeader>
-                <div className="py-4">
-                  <div className="space-y-4">
-                    <div>
-                      <h3 className="mb-2 text-sm font-medium">Catégories</h3>
-                      <div className="grid grid-cols-2 gap-2">
-                        {categories.map((category) => (
-                          <div
-                            key={category.id}
-                            className={`flex items-center gap-2 p-2 rounded-md cursor-pointer transition-all ${
-                              selectedCategories.includes(category.id)
-                                ? "bg-rose-50 text-rose-600 border border-rose-200"
-                                : "hover:bg-gray-100 border border-gray-100 hover:border-gray-200"
-                            }`}
-                            onClick={() => toggleCategory(category.id)}
-                          >
-                            <span className="text-lg">
-                              <CategoryIcon category={category.icon} />
-                            </span>
-                            <span className="text-sm">{category.name}</span>
-                            {selectedCategories.includes(category.id) && (
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="16"
-                                height="16"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                className="ml-auto"
-                              >
-                                <polyline points="20 6 9 17 4 12" />
-                              </svg>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-sm font-medium">Distance (km)</h3>
-                        <span className="text-sm font-medium text-rose-500">
-                          {distance === 1000 ? "Toute la France" : `${distance} km`}
-                        </span>
-                      </div>
-                      <Slider
-                        defaultValue={[1000]}
-                        max={1000}
-                        step={10}
-                        value={[distance]}
-                        onValueChange={(value) => setDistance(value[0])}
-                      />
-                      <div className="flex items-center justify-between mt-1">
-                        <span className="text-xs text-gray-500">Proche</span>
-                        <span className="text-xs text-gray-500">Toute la France</span>
-                      </div>
-                    </div>
-
-                    <Button variant="outline" className="w-full mt-4" onClick={resetFilters}>
-                      Réinitialiser les filtres
-                    </Button>
-                  </div>
-                </div>
-              </SheetContent>
-            </Sheet>
-          </div>
-        </div>
-
-        <div className="relative md:hidden mb-4">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
-          <Input
-            type="search"
-            placeholder="Rechercher des produits..."
-            className="pl-10 pr-4"
-            value={searchQuery}
-            onChange={handleSearchChange}
-          />
-        </div>
-
-        <div className="mb-4">
-          <h1 className="text-2xl font-bold">Carte des produits</h1>
-          <p className="text-gray-500">Découvrez les produits disponibles près de chez vous</p>
-          {locationError && (
-            <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-md text-blue-700 text-sm flex items-center justify-between">
-              <div className="flex items-center">
-                <AlertCircle className="h-4 w-4 mr-2 flex-shrink-0" />
-                <p>{locationError}</p>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="ml-2 bg-white text-blue-700 border-blue-300 hover:bg-blue-50"
-                onClick={requestGeolocation}
-                disabled={isRequestingLocation}
-              >
-                {isRequestingLocation ? (
-                  <>
-                    <span className="animate-spin mr-1">⏳</span>
-                    Localisation...
-                  </>
-                ) : (
-                  <>
-                    <MapPin className="h-3 w-3 mr-1 pulse-location" />
-                    Activer ma position
-                  </>
-                )}
-              </Button>
-            </div>
-          )}
-        </div>
-
-        {/* Affichage des filtres actifs */}
-        {activeFilters > 0 && (
-          <div className="mb-4 flex items-center gap-2 overflow-x-auto pb-2">
-            <Badge variant="outline" className="bg-rose-50 text-rose-600 border-rose-200">
-              {activeFilters} filtre{activeFilters > 1 ? "s" : ""} actif{activeFilters > 1 ? "s" : ""}
-            </Badge>
-
-            {selectedCategories.map((categoryId) => {
-              const category = categories.find((c) => c.id === categoryId)
-              return (
-                <Badge
-                  key={categoryId}
-                  variant="secondary"
-                  className="shrink-0 bg-rose-50 text-rose-600 border-rose-200"
-                  data-category={categoryId}
-                >
-                  <span className="mr-1">
-                    <CategoryIcon category={category?.icon || ""} />
-                  </span>
-                  {category?.name}
-                  <button
-                    className="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                    onClick={() => toggleCategory(categoryId)}
-                  >
-                    <span className="sr-only">Supprimer</span>
-                    <X className="h-3 w-3" />
-                  </button>
-                </Badge>
-              )
-            })}
-
-            {distance < 1000 && (
-              <Badge variant="secondary" className="shrink-0 bg-rose-50 text-rose-600 border-rose-200">
-                <MapPin className="h-3 w-3 mr-1" />
-                {distance} km
-                <button
-                  className="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                  onClick={() => setDistance(1000)}
-                >
-                  <span className="sr-only">Réinitialiser la distance</span>
-                  <X className="h-3 w-3" />
-                </button>
-              </Badge>
-            )}
-
-            {searchQuery && (
-              <Badge variant="secondary" className="shrink-0 bg-rose-50 text-rose-600 border-rose-200">
-                <Search className="h-3 w-3 mr-1" />"{searchQuery}"
-                <button
-                  className="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                  onClick={() => setSearchQuery("")}
-                >
-                  <span className="sr-only">Effacer la recherche</span>
-                  <X className="h-3 w-3" />
-                </button>
-              </Badge>
-            )}
+            <Button
+              variant="outline"
+              size="sm"
+              className="ml-2 bg-white text-blue-700 border-blue-300 hover:bg-blue-50"
+              onClick={requestGeolocation}
+              disabled={isRequestingLocation}
+            >
+              {isRequestingLocation ? (
+                <>
+                  <span className="animate-spin mr-1">⏳</span>
+                  Localisation...
+                </>
+              ) : (
+                <>
+                  <MapPin className="h-3 w-3 mr-1 pulse-location" />
+                  Activer ma position
+                </>
+              )}
+            </Button>
           </div>
         )}
+
+        {/* Composant de filtres centralisé */}
+        <ProductFilters
+          initialValues={filters}
+          onFilterChange={handleFilterChange}
+          onResetFilters={resetFilters}
+          hasGeolocation={!!userLocation}
+          onRequestGeolocation={requestGeolocation}
+          isRequestingLocation={isRequestingLocation}
+          showExpandedFilters={showExpandedFilters}
+          onToggleExpandedFilters={() => setShowExpandedFilters(!showExpandedFilters)}
+          className="mb-6"
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Carte */}
@@ -554,7 +282,7 @@ export default function MapPage() {
             <div className="bg-white rounded-lg border shadow-sm overflow-hidden h-[600px]">
               <LeafletMapComponent
                 userLocation={userLocation}
-                products={filteredProducts}
+                products={products}
                 selectedProduct={selectedProduct}
                 setSelectedProduct={setSelectedProduct}
               />
@@ -563,50 +291,81 @@ export default function MapPage() {
 
           {/* Liste des produits */}
           <div className="space-y-4">
-            <h2 className="text-lg font-medium">Produits à proximité ({filteredProducts.length})</h2>
+            <h2 className="text-lg font-medium">
+              {isLoading ? "Chargement des produits..." : `Produits à proximité (${products.length})`}
+            </h2>
             <div className="space-y-3 max-h-[550px] overflow-y-auto pr-2">
-              {filteredProducts.map((product) => (
-                <div
-                  key={product.id}
-                  className={`flex gap-3 p-3 rounded-lg border bg-white cursor-pointer transition-all ${
-                    selectedProduct === product.id ? "border-rose-500 shadow-md" : "hover:shadow-sm"
-                  }`}
-                  onClick={() => setSelectedProduct(product.id)}
-                >
-                  <div className="w-20 h-20 shrink-0 rounded-md overflow-hidden">
-                    <Image
-                      src={product.image || "/placeholder.svg"}
-                      alt={product.title}
-                      width={80}
-                      height={80}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-sm line-clamp-1">{product.title}</h3>
-                    <p className="text-rose-500 font-bold">{product.price.toLocaleString()}€</p>
-                    <div className="flex items-center text-xs text-gray-500 mt-1">
-                      <MapPin className="h-3 w-3 mr-1" />
-                      <span className="line-clamp-1">{product.location}</span>
-                    </div>
-                    <div className="flex items-center justify-between mt-1">
-                      <span className="text-xs text-gray-500">{product.date}</span>
-                      <Link href={`/product/${product.id}`} className="text-xs text-rose-500 hover:underline">
-                        Voir
-                      </Link>
+              {isLoading ? (
+                // Afficher des placeholders pendant le chargement
+                Array.from({ length: 5 }).map((_, index) => (
+                  <div key={index} className="flex gap-3 p-3 rounded-lg border bg-white animate-pulse">
+                    <div className="w-20 h-20 shrink-0 rounded-md bg-gray-200"></div>
+                    <div className="flex-1 min-w-0 space-y-2">
+                      <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                      <div className="h-5 bg-gray-200 rounded w-1/4"></div>
+                      <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                      <div className="flex justify-between">
+                        <div className="h-3 bg-gray-200 rounded w-1/4"></div>
+                        <div className="h-3 bg-gray-200 rounded w-1/6"></div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-              {filteredProducts.length === 0 && (
-                <div className="text-center py-8 bg-gray-50 rounded-lg border border-dashed">
-                  <MapPin className="h-10 w-10 text-gray-400 mx-auto mb-2" />
-                  <h3 className="font-medium">Aucun produit trouvé</h3>
-                  <p className="text-sm text-gray-500 mt-1">Essayez d'ajuster vos filtres</p>
-                  <Button variant="outline" className="mt-4" onClick={resetFilters}>
-                    Réinitialiser les filtres
-                  </Button>
-                </div>
+                ))
+              ) : (
+                <>
+                  {products.map((product) => (
+                    <div
+                      key={product.id}
+                      className={`flex gap-3 p-3 rounded-lg border bg-white cursor-pointer transition-all ${
+                        selectedProduct === product.id ? "border-rose-500 shadow-md" : "hover:shadow-sm"
+                      }`}
+                      onClick={() => setSelectedProduct(product.id)}
+                    >
+                      <div className="w-20 h-20 shrink-0 rounded-md overflow-hidden">
+                        <Image
+                          src={product.primaryImage || "/placeholder.svg?height=300&width=300"}
+                          alt={product.title}
+                          width={80}
+                          height={80}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-medium text-sm line-clamp-1">{product.title}</h3>
+                        <p className="text-rose-500 font-bold">{product.price.toLocaleString()}€</p>
+                        <div className="flex items-center text-xs text-gray-500 mt-1">
+                          <MapPin className="h-3 w-3 mr-1" />
+                          <span className="line-clamp-1">{product.location}</span>
+                          {product.distance !== null && (
+                            <span className="ml-1">
+                              (
+                              {product.distance < 1
+                                ? `${Math.round(product.distance * 1000)} m`
+                                : `${product.distance.toFixed(1)} km`}
+                              )
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center justify-between mt-1">
+                          <span className="text-xs text-gray-500">{formatRelativeDate(product.createdAt)}</span>
+                          <Link href={`/product/${product.id}`} className="text-xs text-rose-500 hover:underline">
+                            Voir
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {products.length === 0 && !isLoading && (
+                    <div className="text-center py-8 bg-gray-50 rounded-lg border border-dashed">
+                      <MapPin className="h-10 w-10 text-gray-400 mx-auto mb-2" />
+                      <h3 className="font-medium">Aucun produit trouvé</h3>
+                      <p className="text-sm text-gray-500 mt-1">Essayez d'ajuster vos filtres</p>
+                      <Button variant="outline" className="mt-4" onClick={resetFilters}>
+                        Réinitialiser les filtres
+                      </Button>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
