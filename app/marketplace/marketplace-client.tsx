@@ -8,6 +8,7 @@ import { Star } from "lucide-react"
 
 import { ProductFilters, type FilterValues } from "@/components/product-filters"
 import { useGeolocation } from "@/hooks/use-geolocation"
+import { Header } from "@/components/header"
 
 interface MarketplaceClientProps {
   products: any[]
@@ -162,8 +163,10 @@ export default function MarketplaceClient({ products, pagination, filters }: Mar
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <Header />
       <div className="container py-6">
+        
         {/* En-tête avec titre */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold">Marketplace</h1>

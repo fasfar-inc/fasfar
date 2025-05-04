@@ -3,7 +3,8 @@
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
-import { getDynamicIcon } from "@/lib/icons"
+import { ICON_MAP, getIconColor } from "@/lib/icons"
+import React from "react"
 
 interface Category {
   id: string
@@ -92,8 +93,8 @@ export function CategoryShowcase() {
         </div>
         <div className="mx-auto mt-8 grid max-w-5xl grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
           {categories.map((category, index) => {
-            const IconComponent = category.icon ? getDynamicIcon(category.icon) : null
-            const colorClass = category.color || "bg-gray-100 text-gray-700"
+            const iconDef = category.icon ? ICON_MAP[category.icon.toLowerCase()] : null
+            const colorClass = category.color || getIconColor(category.icon || '')
 
             return (
               <Link
@@ -107,14 +108,12 @@ export function CategoryShowcase() {
                   transform: "translateY(10px)",
                 }}
                 onMouseEnter={(e) => {
-                  // Effet de surprise: faire tourner l'icône
                   const icon = e.currentTarget.querySelector(".category-icon")
                   if (icon) {
                     icon.classList.add("rotate-icon")
                   }
                 }}
                 onMouseLeave={(e) => {
-                  // Arrêter la rotation
                   const icon = e.currentTarget.querySelector(".category-icon")
                   if (icon) {
                     icon.classList.remove("rotate-icon")
@@ -122,7 +121,7 @@ export function CategoryShowcase() {
                 }}
               >
                 <div className={`rounded-full p-3 ${colorClass} category-icon`}>
-                  {IconComponent && <IconComponent className="h-6 w-6" />}
+                  {iconDef?.icon && React.createElement(iconDef.icon, { className: "h-6 w-6" })}
                 </div>
                 <h3 className="mt-3 font-medium">{category.name}</h3>
                 <p className="mt-1 text-xs text-gray-500">

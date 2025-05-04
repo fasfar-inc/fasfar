@@ -8,8 +8,13 @@ import { Button } from "@/components/ui/button"
 import { FeaturedProductsServer } from "@/components/featured-products-server"
 import { NearbyProductsServer } from "@/components/nearby-products-server"
 import { Suspense } from "react"
+import { getServerSession } from "next-auth"
+import { authOptions } from "./api/auth/[...nextauth]/route"
+import { redirect } from "next/navigation"
 
-export default function Home() {
+export default async function Home() {
+  const session = await getServerSession(authOptions)
+
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
@@ -58,31 +63,33 @@ export default function Home() {
 
         <HowItWorks />
 
-        <section className="w-full py-12 md:py-24 lg:py-32 bg-rose-50">
-          <div className="container px-4 md:px-6">
-            <div className="flex flex-col items-center justify-center space-y-4 text-center">
-              <div className="space-y-2">
-                <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">Rejoignez la communauté Fasfar</h2>
-                <p className="max-w-[600px] text-gray-500 md:text-xl">
-                  Inscrivez-vous aujourd'hui et commencez à acheter et vendre dans votre région.
-                </p>
-              </div>
-              <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                <Link href="/signup">
-                  <Button size="lg" className="bg-rose-500 hover:bg-rose-600">
-                    Créer un compte
-                  </Button>
-                </Link>
-                <Link href="/map">
-                  <Button size="lg" variant="outline">
-                    <MapPin className="mr-2 h-4 w-4" />
-                    Explorer la carte
-                  </Button>
-                </Link>
+        {!session && (
+          <section className="w-full py-12 md:py-24 lg:py-32 bg-rose-50">
+            <div className="container px-4 md:px-6">
+              <div className="flex flex-col items-center justify-center space-y-4 text-center">
+                <div className="space-y-2">
+                  <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">Rejoignez la communauté Fasfar</h2>
+                  <p className="max-w-[600px] text-gray-500 md:text-xl">
+                    Inscrivez-vous aujourd'hui et commencez à acheter et vendre dans votre région.
+                  </p>
+                </div>
+                <div className="flex flex-col gap-2 min-[400px]:flex-row">
+                  <Link href="/signup">
+                    <Button size="lg" className="bg-rose-500 hover:bg-rose-600">
+                      Créer un compte
+                    </Button>
+                  </Link>
+                  <Link href="/map">
+                    <Button size="lg" variant="outline">
+                      <MapPin className="mr-2 h-4 w-4" />
+                      Explorer la carte
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
       </main>
       <Footer />
     </div>

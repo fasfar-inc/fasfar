@@ -1,6 +1,6 @@
 import { Suspense } from "react"
 import { prisma } from "@/lib/prisma"
-import type { ProductCategory, ProductCondition } from "@prisma/client"
+import type { ProductCondition } from "@prisma/client"
 import MarketplaceClient from "./marketplace-client"
 import MarketplaceSkeleton from "./marketplace-skeleton"
 import { calculateDistance } from "@/lib/utils"
@@ -25,7 +25,7 @@ export interface MarketplaceServerProps {
 export default async function MarketplaceServer({ searchParams }: MarketplaceServerProps) {
   // Extraire les paramètres de filtrage
   const filters = {
-    category: searchParams.category as ProductCategory | undefined,
+    category: searchParams.category,
     minPrice: searchParams.minPrice ? Number.parseFloat(searchParams.minPrice) : undefined,
     maxPrice: searchParams.maxPrice ? Number.parseFloat(searchParams.maxPrice) : undefined,
     condition: searchParams.condition as ProductCondition | undefined,
@@ -46,7 +46,15 @@ export default async function MarketplaceServer({ searchParams }: MarketplaceSer
   }
 
   if (filters.category) {
-    where.category = filters.category
+    // First find the category by slug
+    const category = await prisma.category.findFirst({
+      where: { slug: filters.category },
+      select: { id: true }
+    })
+    
+    if (category) {
+      where.categoryId = category.id
+    }
   }
 
   if (filters.minPrice || filters.maxPrice) {

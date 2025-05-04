@@ -1,8 +1,9 @@
 "use client"
 
 import Link from "next/link"
+import React from "react"
 import { Button } from "@/components/ui/button"
-import { getDynamicIcon } from "@/lib/icons"
+import { ICON_MAP, getIconColor } from "@/lib/icons"
 
 interface Subcategory {
   id: string
@@ -22,15 +23,15 @@ interface Category {
 }
 
 export default function CategoryCard({ category }: { category: Category }) {
-  const IconComponent = category.icon ? getDynamicIcon(category.icon) : null
-  const colorClass = category.color || "bg-gray-100 text-gray-700"
+  const iconDef = category.icon ? ICON_MAP[category.icon.toLowerCase()] : null
+  const colorClass = category.color || getIconColor(category.icon || '')
 
   return (
     <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
       <div className="p-6">
         <div className="flex items-start justify-between">
           <div className={`rounded-full p-3 ${colorClass}`}>
-            {IconComponent && <IconComponent className="h-6 w-6" />}
+            {iconDef?.icon && React.createElement(iconDef.icon, { className: "h-6 w-6" })}
           </div>
           <span className="text-sm text-gray-500">{category.productCount} annonces</span>
         </div>

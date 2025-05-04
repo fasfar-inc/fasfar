@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { ShoppingBag, MapPin } from "lucide-react"
+import { ShoppingBag, MapPin, MessageCircle, Wrench } from "lucide-react"
 import { useSession } from "next-auth/react"
 
 import { Button } from "@/components/ui/button"
@@ -20,21 +20,21 @@ export function Header() {
         </Link>
         <div className="hidden md:flex md:flex-1 md:items-center md:justify-end md:space-x-4">
           <nav className="hidden md:flex items-center space-x-6">
-            <Link href="/marketplace" className="text-sm font-medium transition-colors hover:text-rose-500">
+            <Link href="/marketplace" className="text-sm font-medium transition-colors hover:text-rose-500 flex items-center">
+            <ShoppingBag className="h-4 w-4 mr-1" />
               Marketplace
             </Link>
             <Link href="/map" className="text-sm font-medium transition-colors hover:text-rose-500 flex items-center">
               <MapPin className="h-4 w-4 mr-1" />
               Carte
             </Link>
-            <Link href="/categories" className="text-sm font-medium transition-colors hover:text-rose-500">
-              Catégories
-            </Link>
-            <Link href="/messages" className="text-sm font-medium transition-colors hover:text-rose-500">
+            <Link href="/messages" className="text-sm font-medium transition-colors hover:text-rose-500 flex items-center">
+              <MessageCircle className="h-4 w-4 mr-1" />
               Messages
             </Link>
             {session?.user?.role === "ADMIN" && (
-              <Link href="/admin" className="text-sm font-medium transition-colors hover:text-rose-500">
+              <Link href="/admin" className="text-sm font-medium transition-colors hover:text-rose-500 flex items-center">
+                <Wrench className="h-4 w-4 mr-1" />
                 Admin
               </Link>
             )}
@@ -68,8 +68,7 @@ export function Header() {
           <div className="container p-4">
             <div className="flex justify-between items-center mb-8">
               <Link href="/" className="flex items-center gap-2">
-                <ShoppingBag className="h-6 w-6 text-rose-500" />
-                <span className="text-xl font-bold">fasfar</span>
+                <img src="/logo.png" alt="fasfar" width={100} height={100} />
               </Link>
               <Button variant="outline" size="icon" onClick={() => setMobileMenuOpen(false)}>
                 <svg
@@ -91,7 +90,8 @@ export function Header() {
               </Button>
             </div>
             <nav className="flex flex-col space-y-6">
-              <Link href="/marketplace" className="text-lg font-medium" onClick={() => setMobileMenuOpen(false)}>
+              <Link href="/marketplace" className="text-lg font-medium flex items-center" onClick={() => setMobileMenuOpen(false)}>
+                <ShoppingBag className="h-5 w-5 mr-2" />  
                 Marketplace
               </Link>
               <Link
@@ -101,9 +101,6 @@ export function Header() {
               >
                 <MapPin className="h-5 w-5 mr-2" />
                 Carte
-              </Link>
-              <Link href="/categories" className="text-lg font-medium" onClick={() => setMobileMenuOpen(false)}>
-                Catégories
               </Link>
               {session?.user?.role === "ADMIN" && (
                 <Link href="/admin" className="text-lg font-medium" onClick={() => setMobileMenuOpen(false)}>

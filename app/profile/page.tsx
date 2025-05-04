@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, Star, Package, MapPin, Calendar, Edit, Save, X, Plus, Pencil, Trash2, Eye } from "lucide-react"
+import { Loader2, Star, Package, MapPin, Calendar, Edit, Save, X, Plus, Pencil, Trash2, Eye, Link, ArrowLeft } from "lucide-react"
 import { format } from "date-fns"
 import { fr } from "date-fns/locale"
 import type { UserResponse, ProductResponse } from "@/lib/types"
@@ -217,6 +217,12 @@ export default function ProfilePage() {
 
   return (
     <div className="container py-8">
+        <div className="mb-6 flex items-center justify-between">
+          <Link href="/" className="flex items-center text-sm font-medium text-gray-500 hover:text-gray-900">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Retour à l'accueil
+          </Link>
+        </div>
       <h1 className="text-3xl font-bold mb-6">Mon profil</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

@@ -29,6 +29,7 @@ import {
 } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import Link from "next/link"
+import React from "react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -79,6 +80,8 @@ import {
   Cell,
 } from "recharts"
 
+// Import the new icon system
+import { ICON_MAP, availableIcons, getIconColor } from "@/lib/icons"
 
 // Types
 interface Category {
@@ -148,50 +151,6 @@ interface Product {
 }
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"]
-
-// Icônes disponibles pour les catégories
-const availableIcons = [
-  "Home",
-  "Car",
-  "Smartphone",
-  "Laptop",
-  "Utensils",
-  "Shirt",
-  "Dumbbell",
-  "Flower",
-  "Book",
-  "Music",
-  "Camera",
-  "Tv",
-  "Gift",
-  "Baby",
-  "Briefcase",
-  "Palette",
-]
-
-// Composant pour afficher l'icône dynamiquement
-const DynamicIcon = ({ name }: { name: string }) => {
-  switch (name) {
-    case "Home":
-      return <Home className="h-5 w-5" />
-    case "Car":
-      return <Package className="h-5 w-5" />
-    case "Smartphone":
-      return <ShoppingBag className="h-5 w-5" />
-    case "Laptop":
-      return <Settings className="h-5 w-5" />
-    case "Utensils":
-      return <Users className="h-5 w-5" />
-    case "Shirt":
-      return <Bell className="h-5 w-5" />
-    case "Dumbbell":
-      return <MessageSquare className="h-5 w-5" />
-    case "Flower":
-      return <Home className="h-5 w-5" />
-    default:
-      return <Package className="h-5 w-5" />
-  }
-}
 
 export default function AdminPage() {
   const { data: session, status } = useSession()
@@ -1695,10 +1654,14 @@ export default function AdminPage() {
                           </SelectTrigger>
                           <SelectContent>
                             {availableIcons.map((icon) => (
-                              <SelectItem key={icon} value={icon}>
+                              <SelectItem key={icon.name} value={icon.name}>
                                 <div className="flex items-center">
-                                  <DynamicIcon name={icon} />
-                                  <span className="ml-2">{icon}</span>
+                                  {ICON_MAP[icon.name]?.icon && (
+                                    <div className={`p-1 rounded-md mr-2 ${icon.color}`}>
+                                      {React.createElement(ICON_MAP[icon.name].icon, { className: "h-4 w-4" })}
+                                    </div>
+                                  )}
+                                  <span>{icon.label}</span>
                                 </div>
                               </SelectItem>
                             ))}
@@ -1748,8 +1711,8 @@ export default function AdminPage() {
                         {filteredCategories.map((category) => (
                           <TableRow key={category.id}>
                             <TableCell>
-                              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-rose-50 text-rose-500">
-                                <DynamicIcon name={category.icon} />
+                              <div className={`w-10 h-10 flex items-center justify-center rounded-full ${getIconColor(category.icon)}`}>
+                                {ICON_MAP[category.icon]?.icon && React.createElement(ICON_MAP[category.icon].icon, { className: "h-5 w-5" })}
                               </div>
                             </TableCell>
                             <TableCell className="font-medium">{category.name}</TableCell>
@@ -1821,10 +1784,14 @@ export default function AdminPage() {
                                             </SelectTrigger>
                                             <SelectContent>
                                               {availableIcons.map((icon) => (
-                                                <SelectItem key={icon} value={icon}>
+                                                <SelectItem key={icon.name} value={icon.name}>
                                                   <div className="flex items-center">
-                                                    <DynamicIcon name={icon} />
-                                                    <span className="ml-2">{icon}</span>
+                                                    {ICON_MAP[icon.name]?.icon && (
+                                                      <div className={`p-1 rounded-md mr-2 ${icon.color}`}>
+                                                        {React.createElement(ICON_MAP[icon.name].icon, { className: "h-4 w-4" })}
+                                                      </div>
+                                                    )}
+                                                    <span>{icon.label}</span>
                                                   </div>
                                                 </SelectItem>
                                               ))}
