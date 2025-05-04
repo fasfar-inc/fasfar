@@ -81,8 +81,8 @@ export function FeaturedProductsClient({ products }: FeaturedProductsProps) {
       <div className="container px-4 md:px-6">
         <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
           <div className="space-y-1">
-            <h2 className="text-2xl font-bold tracking-tight md:text-3xl">Produits en vedette</h2>
-            <p className="text-gray-500">Découvrez nos produits les plus populaires près de chez vous.</p>
+            <h2 className="text-2xl font-bold tracking-tight md:text-3xl">Nouvelles Arrivages</h2>
+            <p className="text-gray-500">Découvrez les produits fraîchement ajoutés près de chez vous.</p>
           </div>
           <Link href="/marketplace">
             <Button variant="link" className="gap-1 text-rose-500">

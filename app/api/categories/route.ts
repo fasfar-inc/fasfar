@@ -3,7 +3,8 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { prisma } from "@/lib/prisma"
 import type { ProductFilterInput } from "@/lib/types"
-import { ProductCategory, ProductCondition } from "@prisma/client"
+import { ProductCondition } from "@prisma/client"
+import ProductCategory  from "@prisma/client"
 
 // GET /api/products - Récupérer tous les produits avec filtres
 export async function GET(request: NextRequest) {
@@ -57,9 +58,8 @@ export async function GET(request: NextRequest) {
         { description: { contains: filters.search, mode: "insensitive" } },
       ]
     }
-
     // Calcul de la pagination
-    const skip = (filters.page - 1) * filters.limit
+    const skip = ((filters.page ?? 1) - 1) * (filters.limit ?? 10)
 
     // Déterminer l'ordre de tri
     let orderBy: any = {}
@@ -139,9 +139,9 @@ export async function GET(request: NextRequest) {
       products: formattedProducts,
       pagination: {
         total: totalProducts,
-        page: filters.page,
-        limit: filters.limit,
-        pages: Math.ceil(totalProducts / filters.limit),
+        page: filters.page ?? 1,
+        limit: filters.limit ?? 10,
+        pages: Math.ceil(totalProducts / (filters.limit ?? 10)),
       },
     })
   } catch (error) {
@@ -191,8 +191,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Vérifier que la catégorie est valide selon l'enum ProductCategory
-    if (!data.category || !Object.values(ProductCategory).includes(data.category)) {
-      console.error("Catégorie invalide:", data.category)
+    if (!data.categoryId || !Object.values(ProductCategory).includes(data.categoryId)) {
+      console.error("Catégorie invalide:", data.categoryId)
       console.log("Catégories valides:", Object.values(ProductCategory))
       return NextResponse.json(
         {
@@ -242,8 +242,8 @@ export async function POST(request: NextRequest) {
           title: data.title,
           description: data.description || "",
           price: Number.parseFloat(data.price.toString()),
-          category: data.category as ProductCategory,
-          condition: data.condition as ProductCondition,
+          categoryId: data.categoryId,
+          condition: data.condition,
           location: data.location || "",
           latitude: data.latitude || null,
           longitude: data.longitude || null,
@@ -273,7 +273,7 @@ export async function POST(request: NextRequest) {
 
           if (imageData.length > 0) {
             // S'assurer qu'il y a au moins une image principale
-            const hasPrimary = imageData.some((img) => img.isPrimary)
+            const hasPrimary = imageData.some((img: { isPrimary: boolean }) => img.isPrimary)
             if (!hasPrimary && imageData.length > 0) {
               imageData[0].isPrimary = true
             }

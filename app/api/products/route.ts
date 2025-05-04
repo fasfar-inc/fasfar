@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions } from "../auth/[...nextauth]/route"
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { prisma } from "@/lib/prisma"
 import type { ProductFilterInput } from "@/lib/types"
 import { ProductCategory, ProductCondition } from "@prisma/client"
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Calcul de la pagination
-    const skip = ((filters.page || 1) - 1) * (filters.limit || 10)
+    const skip = (filters.page - 1) * filters.limit
 
     // Déterminer l'ordre de tri
     let orderBy: any = {}
@@ -113,16 +113,6 @@ export async function GET(request: NextRequest) {
     // Formater les produits pour inclure l'image principale
     const formattedProducts = products.map((product) => {
       const primaryImage = product.images.find((img) => img.isPrimary)
-      // Vérifiez que la partie de la requête qui traite les coordonnées géographiques est correcte
-      if (filters.latitude && filters.longitude && product.latitude && product.longitude) {
-        const distance = calculateDistance(filters.latitude, filters.longitude, product.latitude, product.longitude)
-        return {
-          ...product,
-          primaryImage: primaryImage ? primaryImage.imageUrl : product.images[0]?.imageUrl || null,
-          favoritesCount: product._count.favorites,
-          distance: distance,
-        }
-      }
       return {
         ...product,
         primaryImage: primaryImage ? primaryImage.imageUrl : product.images[0]?.imageUrl || null,
@@ -151,7 +141,7 @@ export async function GET(request: NextRequest) {
         total: totalProducts,
         page: filters.page,
         limit: filters.limit,
-        pages: Math.ceil(totalProducts / (filters.limit || 10)),
+        pages: Math.ceil(totalProducts / filters.limit),
       },
     })
   } catch (error) {
@@ -283,7 +273,7 @@ export async function POST(request: NextRequest) {
 
           if (imageData.length > 0) {
             // S'assurer qu'il y a au moins une image principale
-            const hasPrimary: boolean = imageData.some((img: { isPrimary: boolean }) => img.isPrimary)
+            const hasPrimary = imageData.some((img) => img.isPrimary)
             if (!hasPrimary && imageData.length > 0) {
               imageData[0].isPrimary = true
             }

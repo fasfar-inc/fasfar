@@ -5,7 +5,7 @@ import { calculateDistance } from "@/lib/utils"
 
 export async function NearbyProductsServer() {
   // Récupérer les coordonnées de l'utilisateur depuis les cookies
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const userLatCookie = cookieStore.get("user-latitude")
   const userLngCookie = cookieStore.get("user-longitude")
 
@@ -52,7 +52,7 @@ export async function NearbyProductsServer() {
         image: product.images[0]?.imageUrl || "/diverse-products-still-life.png",
       }
     })
-    .filter(Boolean)
+    .filter((product): product is NonNullable<typeof product> => product !== null)
     .sort((a, b) => a.distance - b.distance)
 
   return <NearbyProducts initialProducts={productsWithDistance} />

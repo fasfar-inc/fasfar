@@ -10,24 +10,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Modèles pour Fasfar Marketplace
+// Modèles pour fasfar Marketplace
 
 enum UserRole {
   ADMIN
   USER
-}
-
-enum ProductCategory {
-  REAL_ESTATE
-  VEHICLES
-  PHONES
-  DIGITAL_DEVICES
-  HOME_KITCHEN
-  FASHION
-  CLOTHING
-  SPORTS
-  GARDEN
-  OTHER
 }
 
 enum ProductCondition {
@@ -96,12 +83,47 @@ model User {
   savedSearches    SavedSearchUser[]
 }
 
+model Category {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  slug        String    @unique
+  description String?
+  icon        String?   // Nom de l'icône (ex: "home", "car", etc.)
+  color       String?   // Couleur en format CSS (ex: "bg-blue-100 text-blue-700")
+  order       Int       @default(0)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  products    Product[]
+  subcategories Subcategory[]
+}
+
+model Subcategory {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String
+  categoryId  String
+  order       Int       @default(0)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  category    Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  products    Product[]
+
+  @@unique([categoryId, slug])
+}
+
 model Product {
   id          Int       @id @default(autoincrement())
   title       String
   description String?
   price       Float
-  category    ProductCategory
+  categoryId  String
+  subcategoryId String?
   condition   ProductCondition
   location    String?
   latitude    Float?
@@ -114,6 +136,8 @@ model Product {
   viewsCount  Int       @default(0)
 
   // Relations
+  category    Category  @relation(fields: [categoryId], references: [id])
+  subcategory Subcategory? @relation(fields: [subcategoryId], references: [id])
   seller      User      @relation(fields: [sellerId], references: [id])
   images      ProductImage[]
   favorites   FavoriteProduct[]
@@ -218,7 +242,7 @@ model Notification {
 model SavedSearch {
   id              Int               @id @default(autoincrement())
   name            String
-  category        ProductCategory?
+  categoryId      String?
   minPrice        Float?
   maxPrice        Float?
   location        String?

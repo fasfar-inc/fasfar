@@ -43,6 +43,8 @@ export default function NewProductPage() {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [apiError, setApiError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [categories, setCategories] = useState<{ slug: string, name: string }[]>([])
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true)
 
   // Rediriger vers la page de connexion si l'utilisateur n'est pas connecté
   useEffect(() => {
@@ -50,6 +52,24 @@ export default function NewProductPage() {
       router.push("/login?redirect=/product/new")
     }
   }, [status, router])
+
+  useEffect(() => {
+    async function fetchCategories() {
+      setIsLoadingCategories(true)
+      try {
+        const res = await fetch("/api/categories")
+        const data = await res.json()
+        // If your API returns { products: [...] }
+        const cats = Array.isArray(data) ? data : data.products
+        setCategories(cats || [])
+      } catch (e) {
+        setCategories([])
+      } finally {
+        setIsLoadingCategories(false)
+      }
+    }
+    fetchCategories()
+  }, [])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -157,7 +177,7 @@ export default function NewProductPage() {
   // Simplifier les données d'image pour l'API
   const prepareImageData = () => {
     return images.map((img) => ({
-      imageUrl: img.url || img.preview,
+      imageUrl: img.imageUrl || img.preview,
       isPrimary: img.isPrimary,
     }))
   }
@@ -233,7 +253,7 @@ export default function NewProductPage() {
       toast({
         title: "Produit créé avec succès",
         description: "Votre produit a été ajouté au marché.",
-        variant: "success",
+        variant: "default",
       })
 
       // Rediriger vers la page du produit
@@ -509,18 +529,17 @@ export default function NewProductPage() {
                         <SelectValue placeholder="Sélectionner une catégorie" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="REAL_ESTATE">Immobilier</SelectItem>
-                        <SelectItem value="VEHICLES">Véhicules</SelectItem>
-                        <SelectItem value="ELECTRONICS">Électronique</SelectItem>
-                        <SelectItem value="HOME_GARDEN">Maison & Jardin</SelectItem>
-                        <SelectItem value="CLOTHING">Vêtements & Accessoires</SelectItem>
-                        <SelectItem value="SPORTS_LEISURE">Sports & Loisirs</SelectItem>
-                        <SelectItem value="TOYS_GAMES">Jeux & Jouets</SelectItem>
-                        <SelectItem value="BOOKS_MOVIES_MUSIC">Livres, Films & Musique</SelectItem>
-                        <SelectItem value="PETS">Animaux</SelectItem>
-                        <SelectItem value="SERVICES">Services</SelectItem>
-                        <SelectItem value="JOBS">Emploi</SelectItem>
-                        <SelectItem value="OTHER">Autre</SelectItem>
+                        {isLoadingCategories ? (
+                          <div className="px-3 py-2 text-sm text-gray-500">Chargement...</div>
+                        ) : categories.length === 0 ? (
+                          <div className="px-3 py-2 text-sm text-gray-500">Aucune catégorie</div>
+                        ) : (
+                          categories.map((cat) => (
+                            <SelectItem key={cat.slug} value={cat.slug}>
+                              {cat.name}
+                            </SelectItem>
+                          ))
+                        )}
                       </SelectContent>
                     </Select>
                     {errors.category && <p className="text-red-500 text-sm mt-1">{errors.category}</p>}

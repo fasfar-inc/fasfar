@@ -7,9 +7,8 @@ export function Footer() {
       <div className="container px-4 md:px-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 mb-8">
           <div>
-            <div className="flex items-center gap-2 mb-4">
-              <ShoppingBag className="h-6 w-6 text-rose-500" />
-              <span className="text-xl font-bold">Fasfar</span>
+            <div className="container flex h-16 items-center">
+              <img src="/logo.png" alt="fasfar" width={100} height={100} />
             </div>
             <p className="text-sm text-gray-500 mb-4">
               Plateforme d'achat et de vente entre particuliers. Trouvez ce que vous cherchez près de chez vous.

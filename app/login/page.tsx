@@ -84,11 +84,10 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <header className="w-full border-b bg-white py-4">
-        <div className="container flex items-center justify-between">
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-16 items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <ShoppingBag className="h-6 w-6 text-rose-500" />
-            <span className="text-xl font-bold">Fasfar</span>
+            <img src="/logo.png" alt="fasfar" width={100} height={100} />
           </Link>
           <Link href="/signup">
             <Button variant="ghost" size="sm">

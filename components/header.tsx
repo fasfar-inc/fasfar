@@ -14,8 +14,7 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
-          <ShoppingBag className="h-6 w-6 text-rose-500" />
-          <span className="text-xl font-bold">Fastav</span>
+          <img src="/logo.png" alt="fasfar" width={100} height={100} />
         </Link>
         <div className="hidden md:flex md:flex-1 md:items-center md:justify-end md:space-x-4">
           <nav className="hidden md:flex items-center space-x-6">
@@ -28,9 +27,6 @@ export function Header() {
             </Link>
             <Link href="/categories" className="text-sm font-medium transition-colors hover:text-rose-500">
               Catégories
-            </Link>
-            <Link href="/about" className="text-sm font-medium transition-colors hover:text-rose-500">
-              À propos
             </Link>
             <Link href="/messages" className="text-sm font-medium transition-colors hover:text-rose-500">
               Messages
@@ -66,7 +62,7 @@ export function Header() {
             <div className="flex justify-between items-center mb-8">
               <Link href="/" className="flex items-center gap-2">
                 <ShoppingBag className="h-6 w-6 text-rose-500" />
-                <span className="text-xl font-bold">Fastav</span>
+                <span className="text-xl font-bold">fasfar</span>
               </Link>
               <Button variant="outline" size="icon" onClick={() => setMobileMenuOpen(false)}>
                 <svg
@@ -101,9 +97,6 @@ export function Header() {
               </Link>
               <Link href="/categories" className="text-lg font-medium" onClick={() => setMobileMenuOpen(false)}>
                 Catégories
-              </Link>
-              <Link href="/about" className="text-lg font-medium" onClick={() => setMobileMenuOpen(false)}>
-                À propos
               </Link>
               <div className="pt-4 border-t">
                 <div className="flex flex-col gap-3">
