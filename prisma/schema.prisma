@@ -1,0 +1,244 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Modèles pour Fasfar Marketplace
+
+enum UserRole {
+  ADMIN
+  USER
+}
+
+enum ProductCategory {
+  REAL_ESTATE
+  VEHICLES
+  PHONES
+  DIGITAL_DEVICES
+  HOME_KITCHEN
+  FASHION
+  CLOTHING
+  SPORTS
+  GARDEN
+  OTHER
+}
+
+enum ProductCondition {
+  NEW
+  LIKE_NEW
+  GOOD
+  FAIR
+  POOR
+}
+
+enum MessageStatus {
+  SENT
+  DELIVERED
+  READ
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+}
+
+enum PaymentMethod {
+  CASH
+  BANK_TRANSFER
+  CREDIT_CARD
+  MOBILE_PAYMENT
+}
+
+model User {
+  id            Int       @id @default(autoincrement())
+  username      String    @unique
+  email         String    @unique
+  passwordHash  String
+  role          UserRole  @default(USER)
+  firstName     String?
+  lastName      String?
+  phone         String?
+  address       String?
+  city          String?
+  postalCode    String?
+  profileImage  String?
+  bio           String?
+  createdAt     DateTime  @default(now())
+  lastLogin     DateTime?
+  isActive      Boolean   @default(true)
+  isVerified    Boolean   @default(false)
+
+  // Relations
+  products      Product[]
+  reviewsReceived UserReview[] @relation("UserReviews")
+  reviewsGiven    UserReview[] @relation("ReviewerReviews")
+  sentMessages    Message[]    @relation("SenderMessages")
+  receivedMessages Message[]   @relation("ReceiverMessages")
+  notifications   Notification[]
+  favoriteProducts FavoriteProduct[]
+  transactionsAsBuyer Transaction[] @relation("BuyerTransactions")
+  transactionsAsSeller Transaction[] @relation("SellerTransactions")
+  savedSearches    SavedSearchUser[]
+}
+
+model Product {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String?
+  price       Float
+  category    ProductCategory
+  condition   ProductCondition
+  location    String?
+  latitude    Float?
+  longitude   Float?
+  sellerId    Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now()) @updatedAt
+  isActive    Boolean   @default(true)
+  isSold      Boolean   @default(false)
+  viewsCount  Int       @default(0)
+
+  // Relations
+  seller      User      @relation(fields: [sellerId], references: [id])
+  images      ProductImage[]
+  favorites   FavoriteProduct[]
+  transaction Transaction?
+  messages    Message[]
+  notifications Notification[] @relation("ProductNotifications")
+}
+
+model ProductImage {
+  id          Int       @id @default(autoincrement())
+  productId   Int
+  imageUrl    String
+  isPrimary   Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+
+  // Relations
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model FavoriteProduct {
+  userId      Int
+  productId   Int
+  createdAt   DateTime  @default(now())
+
+  // Relations
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@id([userId, productId])
+}
+
+model UserReview {
+  id            Int       @id @default(autoincrement())
+  userId        Int
+  reviewerId    Int
+  rating        Int
+  comment       String?
+  createdAt     DateTime  @default(now())
+  transactionId Int?
+
+  // Relations
+  user          User      @relation("UserReviews", fields: [userId], references: [id])
+  reviewer      User      @relation("ReviewerReviews", fields: [reviewerId], references: [id])
+  transaction   Transaction? @relation(fields: [transactionId], references: [id])
+}
+
+model Message {
+  id          Int           @id @default(autoincrement())
+  senderId    Int
+  receiverId  Int
+  productId   Int?
+  content     String
+  createdAt   DateTime      @default(now())
+  status      MessageStatus @default(SENT)
+
+  // Relations
+  sender      User          @relation("SenderMessages", fields: [senderId], references: [id])
+  receiver    User          @relation("ReceiverMessages", fields: [receiverId], references: [id])
+  product     Product?      @relation(fields: [productId], references: [id])
+}
+
+model Transaction {
+  id              Int               @id @default(autoincrement())
+  productId       Int               @unique
+  buyerId         Int
+  sellerId        Int
+  price           Float
+  paymentMethod   PaymentMethod
+  status          TransactionStatus @default(PENDING)
+  createdAt       DateTime          @default(now())
+  completedAt     DateTime?
+  cancelledAt     DateTime?
+  meetingLocation String?
+  meetingTime     DateTime?
+
+  // Relations
+  product         Product           @relation(fields: [productId], references: [id])
+  buyer           User              @relation("BuyerTransactions", fields: [buyerId], references: [id])
+  seller          User              @relation("SellerTransactions", fields: [sellerId], references: [id])
+  reviews         UserReview[]
+  notifications   Notification[]    @relation("TransactionNotifications")
+}
+
+model Notification {
+  id                  Int               @id @default(autoincrement())
+  userId              Int
+  title               String
+  message             String
+  type                NotificationType  @default(INFO)
+  isRead              Boolean           @default(false)
+  createdAt           DateTime          @default(now())
+  readAt              DateTime?
+  relatedProductId    Int?
+  relatedTransactionId Int?
+
+  // Relations
+  user                User              @relation(fields: [userId], references: [id])
+  relatedProduct      Product?          @relation("ProductNotifications", fields: [relatedProductId], references: [id])
+  relatedTransaction  Transaction?      @relation("TransactionNotifications", fields: [relatedTransactionId], references: [id])
+}
+
+model SavedSearch {
+  id              Int               @id @default(autoincrement())
+  name            String
+  category        ProductCategory?
+  minPrice        Float?
+  maxPrice        Float?
+  location        String?
+  radius          Float?
+  keywords        String?
+  createdAt       DateTime          @default(now())
+  lastExecutedAt  DateTime?
+
+  // Relations
+  users           SavedSearchUser[]
+}
+
+model SavedSearchUser {
+  searchId        Int
+  userId          Int
+  createdAt       DateTime          @default(now())
+
+  // Relations
+  search          SavedSearch       @relation(fields: [searchId], references: [id], onDelete: Cascade)
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([searchId, userId])
+}
