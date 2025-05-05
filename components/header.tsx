@@ -26,7 +26,7 @@ export function Header() {
             </Link>
             <Link href="/map" className="text-sm font-medium transition-colors hover:text-rose-500 flex items-center">
               <MapPin className="h-4 w-4 mr-1" />
-              Carte
+              Map
             </Link>
             <Link href="/messages" className="text-sm font-medium transition-colors hover:text-rose-500 flex items-center">
               <MessageCircle className="h-4 w-4 mr-1" />
@@ -100,10 +100,11 @@ export function Header() {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 <MapPin className="h-5 w-5 mr-2" />
-                Carte
+                Map
               </Link>
               {session?.user?.role === "ADMIN" && (
                 <Link href="/admin" className="text-lg font-medium" onClick={() => setMobileMenuOpen(false)}>
+                  <Wrench className="h-5 w-5 mr-2" />
                   Admin
                 </Link>
               )}
@@ -111,11 +112,11 @@ export function Header() {
                 <div className="flex flex-col gap-3">
                   <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
                     <Button variant="outline" className="w-full justify-start">
-                      Connexion
+                      Login
                     </Button>
                   </Link>
                   <Link href="/signup" onClick={() => setMobileMenuOpen(false)}>
-                    <Button className="w-full justify-start bg-rose-500 hover:bg-rose-600">Inscription</Button>
+                    <Button className="w-full justify-start bg-rose-500 hover:bg-rose-600">Sign up</Button>
                   </Link>
                 </div>
               </div>

@@ -76,8 +76,8 @@ export default function ProductEditForm({ product }: { product: Product }) {
 
     if (session && product.userId !== session.user.id) {
       toast({
-        title: "Accès refusé",
-        description: "Vous n'avez pas les droits pour modifier ce produit.",
+        title: "Access denied",
+        description: "You do not have permission to modify this product.",
         variant: "destructive",
       })
       router.push(`/product/${product.id}`)
@@ -90,8 +90,8 @@ export default function ProductEditForm({ product }: { product: Product }) {
 
     if (!session) {
       toast({
-        title: "Non autorisé",
-        description: "Vous devez être connecté pour modifier un produit.",
+        title: "Unauthorized",
+        description: "You must be logged in to modify a product.",
         variant: "destructive",
       })
       return
@@ -100,8 +100,8 @@ export default function ProductEditForm({ product }: { product: Product }) {
     // Validation de base
     if (!title.trim() || !price.trim() || !category || !condition) {
       toast({
-        title: "Formulaire incomplet",
-        description: "Veuillez remplir tous les champs obligatoires.",
+        title: "Incomplete form",
+        description: "Please fill in all required fields.",
         variant: "destructive",
       })
       return
@@ -133,7 +133,7 @@ export default function ProductEditForm({ product }: { product: Product }) {
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.error || "Erreur lors de la mise à jour du produit")
+        throw new Error(errorData.error || "Error updating the product")
       }
 
       // Gérer les images
@@ -169,18 +169,18 @@ export default function ProductEditForm({ product }: { product: Product }) {
       )
 
       toast({
-        title: "Produit mis à jour",
-        description: "Votre produit a été mis à jour avec succès.",
+        title: "Product updated",
+        description: "Your product has been updated successfully.",
       })
 
       // Rediriger vers la page du produit
       router.push(`/product/${product.id}`)
     } catch (error) {
-      console.error("Erreur lors de la mise à jour du produit:", error)
+      console.error("Error updating the product:", error)
       toast({
-        title: "Erreur",
+        title: "Error",
         description:
-          error instanceof Error ? error.message : "Une erreur est survenue lors de la mise à jour du produit.",
+          error instanceof Error ? error.message : "An error occurred while updating the product.",
         variant: "destructive",
       })
     } finally {
@@ -211,11 +211,11 @@ export default function ProductEditForm({ product }: { product: Product }) {
       <div className="container py-12">
         <Card>
           <CardHeader>
-            <CardTitle>Erreur</CardTitle>
+            <CardTitle>Error</CardTitle>
             <CardDescription>{error}</CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={() => router.push("/profile")}>Retour au profil</Button>
+            <Button onClick={() => router.push("/profile")}>Back to profile</Button>
           </CardContent>
         </Card>
       </div>
@@ -230,29 +230,29 @@ export default function ProductEditForm({ product }: { product: Product }) {
           className="flex items-center text-sm font-medium text-gray-500 hover:text-gray-900"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Retour au produit
+          Back to the product
         </Link>
       </div>
 
-      <h1 className="text-3xl font-bold mb-6">Modifier votre annonce</h1>
+      <h1 className="text-3xl font-bold mb-6">Modify your ad</h1>
 
       <form onSubmit={handleSubmit}>
         <Tabs defaultValue="details" className="space-y-6">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="details">Détails</TabsTrigger>
+            <TabsTrigger value="details">Details</TabsTrigger>
             <TabsTrigger value="images">Images</TabsTrigger>
-            <TabsTrigger value="location">Localisation</TabsTrigger>
+            <TabsTrigger value="location">Location</TabsTrigger>
           </TabsList>
 
           <TabsContent value="details" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Informations générales</CardTitle>
-                <CardDescription>Modifiez les informations principales de votre produit.</CardDescription>
+                <CardTitle>General information</CardTitle>
+                <CardDescription>Modify the main information of your product.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="title">Titre de l'annonce *</Label>
+                  <Label htmlFor="title">Title *</Label>
                   <Input
                     id="title"
                     value={title}
@@ -268,14 +268,14 @@ export default function ProductEditForm({ product }: { product: Product }) {
                     id="description"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Décrivez votre produit en détail..."
+                    placeholder="Describe your product in detail..."
                     rows={5}
                   />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="price">Prix (€) *</Label>
+                    <Label htmlFor="price">Price (€) *</Label>
                     <Input
                       id="price"
                       type="number"
@@ -289,42 +289,42 @@ export default function ProductEditForm({ product }: { product: Product }) {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="category">Catégorie *</Label>
+                    <Label htmlFor="category">Category *</Label>
                     <Select value={category} onValueChange={setCategory} required>
                       <SelectTrigger id="category">
-                        <SelectValue placeholder="Sélectionnez une catégorie" />
+                        <SelectValue placeholder="Select a category" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="ELECTRONICS">Électronique</SelectItem>
-                        <SelectItem value="CLOTHING">Vêtements</SelectItem>
-                        <SelectItem value="FURNITURE">Mobilier</SelectItem>
-                        <SelectItem value="BOOKS">Livres</SelectItem>
-                        <SelectItem value="TOYS">Jouets</SelectItem>
+                        <SelectItem value="ELECTRONICS">Electronics</SelectItem>
+                        <SelectItem value="CLOTHING">Clothing</SelectItem>
+                        <SelectItem value="FURNITURE">Furniture</SelectItem>
+                        <SelectItem value="BOOKS">Books</SelectItem>
+                        <SelectItem value="TOYS">Toys</SelectItem>
                         <SelectItem value="SPORTS">Sports</SelectItem>
-                        <SelectItem value="VEHICLES">Véhicules</SelectItem>
-                        <SelectItem value="JEWELRY">Bijoux</SelectItem>
-                        <SelectItem value="HOME_APPLIANCES">Électroménager</SelectItem>
-                        <SelectItem value="BEAUTY">Beauté</SelectItem>
-                        <SelectItem value="GARDEN">Jardin</SelectItem>
-                        <SelectItem value="MUSIC">Musique</SelectItem>
+                        <SelectItem value="VEHICLES">Vehicles</SelectItem>
+                        <SelectItem value="JEWELRY">Jewelry</SelectItem>
+                        <SelectItem value="HOME_APPLIANCES">Home appliances</SelectItem>
+                        <SelectItem value="BEAUTY">Beauty</SelectItem>
+                        <SelectItem value="GARDEN">Garden</SelectItem>
+                        <SelectItem value="MUSIC">Music</SelectItem>
                         <SelectItem value="COLLECTIBLES">Collections</SelectItem>
-                        <SelectItem value="OTHER">Autre</SelectItem>
+                        <SelectItem value="OTHER">Other</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="condition">État *</Label>
+                    <Label htmlFor="condition">Condition *</Label>
                     <Select value={condition} onValueChange={setCondition} required>
                       <SelectTrigger id="condition">
-                        <SelectValue placeholder="Sélectionnez l'état" />
+                        <SelectValue placeholder="Select the condition" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="NEW">Neuf</SelectItem>
-                        <SelectItem value="LIKE_NEW">Comme neuf</SelectItem>
-                        <SelectItem value="GOOD">Bon état</SelectItem>
-                        <SelectItem value="FAIR">État correct</SelectItem>
-                        <SelectItem value="POOR">État moyen</SelectItem>
+                        <SelectItem value="NEW">New</SelectItem>
+                        <SelectItem value="LIKE_NEW">Like new</SelectItem>
+                        <SelectItem value="GOOD">Good</SelectItem>
+                        <SelectItem value="FAIR">Fair</SelectItem>
+                        <SelectItem value="POOR">Poor</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -336,9 +336,9 @@ export default function ProductEditForm({ product }: { product: Product }) {
           <TabsContent value="images" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Images du produit</CardTitle>
+                <CardTitle>Product images</CardTitle>
                 <CardDescription>
-                  Ajoutez ou modifiez les images de votre produit. La première image sera l'image principale.
+                  Add or modify the images of your product. The first image will be the main image.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -350,12 +350,12 @@ export default function ProductEditForm({ product }: { product: Product }) {
           <TabsContent value="location" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Localisation</CardTitle>
-                <CardDescription>Indiquez où se trouve votre produit pour faciliter les échanges.</CardDescription>
+                <CardTitle>Location</CardTitle>
+                <CardDescription>Indicate where your product is located to facilitate exchanges.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="location">Adresse</Label>
+                  <Label htmlFor="location">Address</Label>
                   <AddressAutocompleteFree
                     value={location}
                     onChange={(address, lat, lng) => {
@@ -363,14 +363,14 @@ export default function ProductEditForm({ product }: { product: Product }) {
                       setLatitude(lat)
                       setLongitude(lng)
                     }}
-                    placeholder="Entrez une adresse"
+                    placeholder="Enter an address"
                   />
                 </div>
 
                 <Separator />
 
                 <div className="space-y-2">
-                  <Label>Position sur la carte</Label>
+                  <Label>Position on the map</Label>
                   <div className="h-[300px] rounded-md overflow-hidden border">
                     <LocationPickerMap
                       latitude={latitude}
@@ -382,7 +382,7 @@ export default function ProductEditForm({ product }: { product: Product }) {
                     />
                   </div>
                   <p className="text-sm text-gray-500">
-                    Vous pouvez ajuster la position en déplaçant le marqueur sur la carte.
+                    You can adjust the position by moving the marker on the map.
                   </p>
                 </div>
               </CardContent>
@@ -391,18 +391,18 @@ export default function ProductEditForm({ product }: { product: Product }) {
 
           <div className="flex justify-end space-x-4 mt-6">
             <Button type="button" variant="outline" onClick={() => router.push(`/product/${product.id}`)}>
-              Annuler
+              Cancel
             </Button>
             <Button type="submit" className="bg-rose-500 hover:bg-rose-600" disabled={saving}>
               {saving ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Enregistrement...
+                  Saving...
                 </>
               ) : (
                 <>
                   <Save className="mr-2 h-4 w-4" />
-                  Enregistrer les modifications
+                  Save changes
                 </>
               )}
             </Button>

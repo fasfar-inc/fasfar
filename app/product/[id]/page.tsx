@@ -59,37 +59,37 @@ function formatDate(dateString: string): string {
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
 
   if (diffDays === 0) {
-    return "Aujourd'hui"
+    return "Today"
   } else if (diffDays === 1) {
-    return "Hier"
+    return "Yesterday"
   } else if (diffDays < 7) {
-    return `Il y a ${diffDays} jours`
+    return `There are ${diffDays} days ago`
   } else if (diffDays < 30) {
-    return `Il y a ${Math.floor(diffDays / 7)} semaine${Math.floor(diffDays / 7) > 1 ? "s" : ""}`
+    return `There are ${Math.floor(diffDays / 7)} week${Math.floor(diffDays / 7) > 1 ? "s" : ""}`
   } else if (diffDays < 365) {
-    return `Il y a ${Math.floor(diffDays / 30)} mois`
+    return `There are ${Math.floor(diffDays / 30)} month${Math.floor(diffDays / 30) > 1 ? "s" : ""}`
   } else {
-    return `Il y a ${Math.floor(diffDays / 365)} an${Math.floor(diffDays / 365) > 1 ? "s" : ""}`
+    return `There are ${Math.floor(diffDays / 365)} year${Math.floor(diffDays / 365) > 1 ? "s" : ""}`
   }
 }
 
 // Fonction pour formater les catégories
 function formatCategory(category: string): string {
   const categoryMap: Record<string, string> = {
-    ELECTRONICS: "Électronique",
-    CLOTHING: "Vêtements",
-    FURNITURE: "Mobilier",
-    BOOKS: "Livres",
-    TOYS: "Jouets",
+    ELECTRONICS: "Electronics",
+    CLOTHING: "Clothing",
+    FURNITURE: "Furniture",
+    BOOKS: "Books",
+    TOYS: "Toys",
     SPORTS: "Sports",
-    VEHICLES: "Véhicules",
-    JEWELRY: "Bijoux",
-    HOME_APPLIANCES: "Électroménager",
-    BEAUTY: "Beauté",
-    GARDEN: "Jardin",
-    MUSIC: "Musique",
+    VEHICLES: "Vehicles",
+    JEWELRY: "Jewelry",
+    HOME_APPLIANCES: "Home appliances",
+    BEAUTY: "Beauty",
+    GARDEN: "Garden",
+    MUSIC: "Music",
     COLLECTIBLES: "Collections",
-    OTHER: "Autre",
+    OTHER: "Other",
   }
 
   return categoryMap[category] || category
@@ -98,11 +98,11 @@ function formatCategory(category: string): string {
 // Fonction pour formater les conditions
 function formatCondition(condition: string): string {
   const conditionMap: Record<string, string> = {
-    NEW: "Neuf",
-    LIKE_NEW: "Comme neuf",
-    GOOD: "Bon état",
-    FAIR: "État correct",
-    POOR: "État moyen",
+    NEW: "New",
+    LIKE_NEW: "Like new",
+    GOOD: "Good",
+    FAIR: "Fair",
+    POOR: "Poor",
   }
 
   return conditionMap[condition] || condition

@@ -72,7 +72,7 @@ export function CategoryShowcase() {
         <div className="container px-4 md:px-6">
           <div className="flex flex-col items-center justify-center space-y-4 text-center">
             <div className="space-y-2">
-              <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">Chargement des catégories...</h2>
+              <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">Loading categories...</h2>
             </div>
           </div>
         </div>
@@ -85,9 +85,9 @@ export function CategoryShowcase() {
       <div className="container px-4 md:px-6">
         <div className="flex flex-col items-center justify-center space-y-4 text-center">
           <div className="space-y-2">
-            <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">Parcourez par catégorie</h2>
+            <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">Browse by category</h2>
             <p className="max-w-[600px] text-gray-500 md:text-xl">
-              Trouvez exactement ce que vous cherchez parmi nos catégories populaires.
+              Find exactly what you're looking for among our popular categories.
             </p>
           </div>
         </div>
@@ -125,7 +125,7 @@ export function CategoryShowcase() {
                 </div>
                 <h3 className="mt-3 font-medium">{category.name}</h3>
                 <p className="mt-1 text-xs text-gray-500">
-                  {category.description || `Explorez tous les produits ${category.name.toLowerCase()}`}
+                  {category.description || `Explore all ${category.name.toLowerCase()} products`}
                 </p>
               </Link>
             )
@@ -133,7 +133,7 @@ export function CategoryShowcase() {
         </div>
         <div className="mt-10 flex justify-center">
           <Link href="/categories">
-            <Button variant="outline">Voir toutes les catégories</Button>
+            <Button variant="outline">See all categories</Button>
           </Link>
         </div>
       </div>

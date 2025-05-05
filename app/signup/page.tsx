@@ -48,27 +48,27 @@ export default function SignupPage() {
     const newErrors: Record<string, string> = {}
 
     if (!formData.firstName.trim()) {
-      newErrors.firstName = "Le prénom est requis"
+      newErrors.firstName = "The first name is required"
     }
 
     if (!formData.lastName.trim()) {
-      newErrors.lastName = "Le nom est requis"
+      newErrors.lastName = "The last name is required"
     }
 
     if (!formData.email.trim()) {
-      newErrors.email = "L'email est requis"
+      newErrors.email = "The email is required"
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "L'email n'est pas valide"
+      newErrors.email = "The email is not valid"
     }
 
     if (!formData.password) {
-      newErrors.password = "Le mot de passe est requis"
+      newErrors.password = "The password is required"
     } else if (formData.password.length < 8) {
-      newErrors.password = "Le mot de passe doit contenir au moins 8 caractères"
+      newErrors.password = "The password must contain at least 8 characters"
     }
 
     if (!formData.agreeTerms) {
-      newErrors.agreeTerms = "Vous devez accepter les conditions d'utilisation"
+      newErrors.agreeTerms = "You must accept the terms of use"
     }
 
     setErrors(newErrors)
@@ -94,7 +94,7 @@ export default function SignupPage() {
       setSocialLoading(provider)
       await signIn(provider, { callbackUrl: "/" })
     } catch (error) {
-      console.error(`Erreur lors de la connexion avec ${provider}:`, error)
+      console.error(`Error connecting with ${provider}:`, error)
     } finally {
       setSocialLoading(null)
     }
@@ -109,7 +109,7 @@ export default function SignupPage() {
           </Link>
           <Link href="/login">
             <Button variant="ghost" size="sm">
-              Déjà inscrit ? Se connecter
+              Already registered ? Login
             </Button>
           </Link>
         </div>
@@ -119,18 +119,18 @@ export default function SignupPage() {
         <div className="w-full max-w-lg mx-auto px-4">
           <div className="bg-white rounded-xl shadow-sm border p-6 md:p-8">
             <div className="mb-6 text-center">
-              <h1 className="text-2xl font-bold">Créer un compte</h1>
-              <p className="text-gray-500 mt-1">Rejoignez la communauté Fasfar</p>
+              <h1 className="text-2xl font-bold">Create an account</h1>
+              <p className="text-gray-500 mt-1">Join the Fasfar community</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="firstName">Prénom</Label>
+                  <Label htmlFor="firstName">First name</Label>
                   <Input
                     id="firstName"
                     name="firstName"
-                    placeholder="Jean"
+                    placeholder="John"
                     value={formData.firstName}
                     onChange={handleChange}
                     className={errors.firstName ? "border-red-500" : ""}
@@ -138,11 +138,11 @@ export default function SignupPage() {
                   {errors.firstName && <p className="text-red-500 text-xs">{errors.firstName}</p>}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="lastName">Nom</Label>
+                  <Label htmlFor="lastName">Last name</Label>
                   <Input
                     id="lastName"
                     name="lastName"
-                    placeholder="Dupont"
+                    placeholder="Doe"
                     value={formData.lastName}
                     onChange={handleChange}
                     className={errors.lastName ? "border-red-500" : ""}
@@ -157,7 +157,7 @@ export default function SignupPage() {
                   id="email"
                   name="email"
                   type="email"
-                  placeholder="jean.dupont@exemple.com"
+                  placeholder="jean.dupont@example.com"
                   value={formData.email}
                   onChange={handleChange}
                   className={errors.email ? "border-red-500" : ""}
@@ -166,7 +166,7 @@ export default function SignupPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Mot de passe</Label>
+                <Label htmlFor="password">Password</Label>
                 <div className="relative">
                   <Input
                     id="password"
@@ -188,7 +188,7 @@ export default function SignupPage() {
                 {errors.password ? (
                   <p className="text-red-500 text-xs">{errors.password}</p>
                 ) : (
-                  <p className="text-xs text-gray-500">Le mot de passe doit contenir au moins 8 caractères</p>
+                  <p className="text-xs text-gray-500">The password must contain at least 8 characters</p>
                 )}
               </div>
 
@@ -203,20 +203,20 @@ export default function SignupPage() {
                   htmlFor="agreeTerms"
                   className="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
-                  J'accepte les{" "}
+                  I accept the{" "}
                   <Link href="/terms" className="text-rose-500 hover:underline">
-                    conditions d'utilisation
+                    terms of use
                   </Link>{" "}
-                  et la{" "}
+                  and the{" "}
                   <Link href="/privacy" className="text-rose-500 hover:underline">
-                    politique de confidentialité
+                    privacy policy
                   </Link>
                 </Label>
               </div>
               {errors.agreeTerms && <p className="text-red-500 text-xs -mt-2">{errors.agreeTerms}</p>}
 
               <Button type="submit" className="w-full bg-rose-500 hover:bg-rose-600 mt-6" disabled={isLoading}>
-                {isLoading ? "Création en cours..." : "Créer un compte"}
+                {isLoading ? "Creation in progress..." : "Create an account"}
               </Button>
             </form>
             {authError && (
@@ -253,7 +253,7 @@ export default function SignupPage() {
                   />
                   <path d="M1 1h22v22H1z" fill="none" />
                 </svg>
-                {socialLoading === "google" ? "Connexion en cours..." : "Continuer avec Google"}
+                {socialLoading === "google" ? "Connection in progress..." : "Continue with Google"}
               </Button>
               <Button 
                 variant="outline" 
@@ -264,14 +264,14 @@ export default function SignupPage() {
                 <svg className="mr-2 h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" />
                 </svg>
-                {socialLoading === "facebook" ? "Connexion en cours..." : "Continuer avec Facebook"}
+                {socialLoading === "facebook" ? "Connection in progress..." : "Continue with Facebook"}
               </Button>
             </div>
 
             <p className="text-center text-sm text-gray-500 mt-6">
-              Déjà inscrit ?{" "}
+              Already registered ?{" "}
               <Link href="/login" className="text-rose-500 hover:underline">
-                Se connecter
+                Login
               </Link>
             </p>
           </div>

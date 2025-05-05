@@ -73,8 +73,8 @@ export function LeafletMapComponent({
       try {
         // Créer la carte avec un zoom plus faible par défaut
         const map = L.map(mapContainerRef.current).setView(
-          userLocation || [46.603354, 1.888334], // Centre de la France par défaut
-          userLocation ? 6 : 5, // Zoom plus faible pour voir plus de produits
+          userLocation || [35.1264, 33.4299], //  Turkey by default
+          userLocation ? 6 : 5, // Zoom more for more products
         )
 
         // Ajouter la couche de tuiles OpenStreetMap
@@ -91,7 +91,7 @@ export function LeafletMapComponent({
           setMapInitialized(true)
         })
       } catch (error) {
-        console.error("Erreur lors de l'initialisation de la carte:", error)
+        console.error("Error initializing the map:", error)
       }
     }
 
@@ -101,7 +101,7 @@ export function LeafletMapComponent({
         try {
           mapRef.current.remove()
         } catch (error) {
-          console.error("Erreur lors du nettoyage de la carte:", error)
+          console.error("Error cleaning up the map:", error)
         }
         mapRef.current = null
         setMapInitialized(false)
@@ -161,7 +161,7 @@ export function LeafletMapComponent({
         mapRef.current.setView(userLocation, 10)
       }
     } catch (error) {
-      console.error("Erreur lors de la mise à jour du marqueur utilisateur:", error)
+      console.error("Error updating the user marker:", error)
     }
   }, [userLocation, mapReady])
 
@@ -175,7 +175,7 @@ export function LeafletMapComponent({
         try {
           marker.remove()
         } catch (error) {
-          console.error("Erreur lors de la suppression d'un marqueur:", error)
+          console.error("Error deleting a marker:", error)
         }
       })
       markersRef.current = {}
@@ -250,7 +250,7 @@ export function LeafletMapComponent({
             // Stocker le marqueur dans la référence
             markersRef.current[product.id] = marker
           } catch (error) {
-            console.error(`Erreur lors de l'ajout du marqueur pour le produit ${product.id}:`, error)
+            console.error(`Error adding the marker for the product ${product.id}:`, error)
           }
         })
 
@@ -275,12 +275,12 @@ export function LeafletMapComponent({
               }
             }
           } catch (error) {
-            console.error("Erreur lors de l'ajustement de la vue:", error)
+            console.error("Error adjusting the view:", error)
           }
         }
       }
     } catch (error) {
-      console.error("Erreur lors de la mise à jour des marqueurs:", error)
+      console.error("Error updating the markers:", error)
     }
   }, [products, selectedProduct, mapReady, setSelectedProduct, userLocation])
 
@@ -312,7 +312,7 @@ export function LeafletMapComponent({
         }
       }
     } catch (error) {
-      console.error("Erreur lors du centrage sur le produit sélectionné:", error)
+      console.error("Error centering on the selected product:", error)
     }
   }, [selectedProduct, products, mapReady])
 
@@ -323,7 +323,7 @@ export function LeafletMapComponent({
         try {
           mapRef.current?.invalidateSize()
         } catch (error) {
-          console.error("Erreur lors du redimensionnement de la carte:", error)
+          console.error("Error resizing the map:", error)
         }
       }
     }

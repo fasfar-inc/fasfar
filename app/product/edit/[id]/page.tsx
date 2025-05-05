@@ -45,7 +45,7 @@ export default async function EditProductPage({ params }: { params: { id: string
         <div className="container py-12 flex justify-center items-center min-h-[60vh]">
           <div className="text-center">
             <Loader2 className="h-8 w-8 animate-spin text-rose-500 mx-auto mb-4" />
-            <p>Chargement du produit...</p>
+            <p>Loading product...</p>
           </div>
         </div>
       }

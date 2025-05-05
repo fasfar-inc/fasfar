@@ -10,8 +10,8 @@ import { Toaster } from 'sonner'
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata = {
-  title: "Fasfar - Achetez et vendez entre particuliers",
-  description: "Plateforme d'achat et de vente entre particuliers. Trouvez ce que vous cherchez près de chez vous.",
+  title: "Fasfar - Buy and sell directly between individuals",
+  description: "Platform for buying and selling between individuals. Find what you're looking for near you.",
 }
 
 export default function RootLayout({
@@ -20,7 +20,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="fr" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head></head>
       <body className={inter.className}>
         <Toaster />

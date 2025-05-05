@@ -91,7 +91,7 @@ export default function LoginPage() {
           </Link>
           <Link href="/signup">
             <Button variant="ghost" size="sm">
-              Pas encore de compte ? S'inscrire
+              No account yet ? Sign up
             </Button>
           </Link>
         </div>
@@ -101,8 +101,8 @@ export default function LoginPage() {
         <div className="w-full max-w-lg mx-auto px-4">
           <div className="bg-white rounded-xl shadow-sm border p-6 md:p-8">
             <div className="mb-6 text-center">
-              <h1 className="text-2xl font-bold">Connexion</h1>
-              <p className="text-gray-500 mt-1">Bienvenue sur Fasfar</p>
+              <h1 className="text-2xl font-bold">Login</h1>
+              <p className="text-gray-500 mt-1">Welcome on Fasfar</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -122,9 +122,9 @@ export default function LoginPage() {
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Mot de passe</Label>
+                  <Label htmlFor="password">Password</Label>
                   <Link href="/forgot-password" className="text-xs text-rose-500 hover:underline">
-                    Mot de passe oublié ?
+                    Forgot password ?
                   </Link>
                 </div>
                 <div className="relative">
@@ -159,12 +159,12 @@ export default function LoginPage() {
                   htmlFor="rememberMe"
                   className="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
-                  Se souvenir de moi
+                  Remember me
                 </Label>
               </div>
 
               <Button type="submit" className="w-full bg-rose-500 hover:bg-rose-600 mt-6" disabled={isLoading}>
-                {isLoading ? "Connexion en cours..." : "Se connecter"}
+                {isLoading ? "Login in progress..." : "Login"}
               </Button>
             </form>
             {authError && (
@@ -201,7 +201,7 @@ export default function LoginPage() {
                   />
                   <path d="M1 1h22v22H1z" fill="none" />
                 </svg>
-                {socialLoading === "google" ? "Connexion en cours..." : "Continuer avec Google"}
+                {socialLoading === "google" ? "Login in progress..." : "Continue with Google"}
               </Button>
               <Button 
                 variant="outline" 
@@ -212,14 +212,14 @@ export default function LoginPage() {
                 <svg className="mr-2 h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" />
                 </svg>
-                {socialLoading === "facebook" ? "Connexion en cours..." : "Continuer avec Facebook"}
+                {socialLoading === "facebook" ? "Login in progress..." : "Continue with Facebook"}
               </Button>
             </div>
 
             <p className="text-center text-sm text-gray-500 mt-6">
-              Pas encore de compte ?{" "}
+              No account yet ?{" "}
               <Link href="/signup" className="text-rose-500 hover:underline">
-                S'inscrire
+                Sign up
               </Link>
             </p>
           </div>

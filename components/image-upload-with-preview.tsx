@@ -123,8 +123,8 @@ export function ImageUploadWithPreview({ images, onChange, maxImages = 5 }: Imag
         <div className="flex flex-col items-center justify-center space-y-3 text-center">
           <Upload className="h-10 w-10 text-gray-400" />
           <div className="space-y-2">
-            <h3 className="text-lg font-semibold">Déposez vos images ici</h3>
-            <p className="text-sm text-gray-500">Formats acceptés: JPG, PNG, GIF (max {maxImages} images)</p>
+            <h3 className="text-lg font-semibold">Drop your images here</h3>
+            <p className="text-sm text-gray-500">Accepted formats: JPG, PNG, GIF (max {maxImages} images)</p>
           </div>
           <Button
             type="button"
@@ -132,7 +132,7 @@ export function ImageUploadWithPreview({ images, onChange, maxImages = 5 }: Imag
             onClick={() => fileInputRef.current?.click()}
             disabled={images.length >= maxImages}
           >
-            Sélectionner des fichiers
+            Select files
           </Button>
           <input
             ref={fileInputRef}
@@ -149,7 +149,7 @@ export function ImageUploadWithPreview({ images, onChange, maxImages = 5 }: Imag
       {images.length > 0 && (
         <div>
           <Label className="block mb-2">
-            Images téléchargées ({images.length}/{maxImages})
+            Uploaded images ({images.length}/{maxImages})
           </Label>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {images.map((image, index) => (
@@ -171,7 +171,7 @@ export function ImageUploadWithPreview({ images, onChange, maxImages = 5 }: Imag
                     type="button"
                     onClick={() => removeImage(index)}
                     className="bg-white rounded-full p-1 shadow hover:bg-gray-100 transition-colors"
-                    title="Supprimer l'image"
+                    title="Delete image"
                   >
                     <X className="h-4 w-4 text-gray-600" />
                   </button>
@@ -180,7 +180,7 @@ export function ImageUploadWithPreview({ images, onChange, maxImages = 5 }: Imag
                     type="button"
                     onClick={() => setMainImage(index)}
                     className="bg-white rounded-full p-1 shadow hover:bg-gray-100 transition-colors"
-                    title={image.isPrimary ? "Image principale" : "Définir comme image principale"}
+                    title={image.isPrimary ? "Main image" : "Set as main image"}
                     disabled={image.isPrimary}
                   >
                     {image.isPrimary ? (
@@ -193,7 +193,7 @@ export function ImageUploadWithPreview({ images, onChange, maxImages = 5 }: Imag
 
                 {image.isPrimary && (
                   <div className="absolute bottom-0 left-0 right-0 bg-rose-500 text-white text-xs py-1 text-center">
-                    Image principale
+                    Main image
                   </div>
                 )}
               </div>

@@ -10,15 +10,19 @@ import {
 import { Button } from "@/components/ui/button"
 import { User } from "lucide-react"
 
-  <DropdownMenuContent align="end">
+export function Navbar() {
+  return (
+    <DropdownMenuContent align="end">
+      <DropdownMenuItem asChild>
+        <Link href="/profile">My profile</Link>
+      </DropdownMenuItem>
     <DropdownMenuItem asChild>
-      <Link href="/profile">Mon profil</Link>
-    </DropdownMenuItem>
-    <DropdownMenuItem asChild>
-      <Link href="/my-announcements">Mes annonces</Link>
+      <Link href="/my-announcements">My announcements</Link>
     </DropdownMenuItem>
     <DropdownMenuSeparator />
-    <DropdownMenuItem onClick={() => signOut()}>
-      Déconnexion
-    </DropdownMenuItem>
-  </DropdownMenuContent> 
+      <DropdownMenuItem onClick={() => signOut()}>
+        Logout
+      </DropdownMenuItem>
+    </DropdownMenuContent>
+  )
+}

@@ -42,20 +42,20 @@ export function GeolocationRequest({ onAccept, onDecline }: GeolocationRequestPr
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div className="bg-white rounded-lg shadow-lg p-6 max-w-md mx-4">
-        <h2 className="text-xl font-bold mb-4">Activer la géolocalisation</h2>
+        <h2 className="text-xl font-bold mb-4">Enable geolocation</h2>
         <p className="mb-4">
-          Pour vous montrer les produits à proximité et calculer les distances, nous avons besoin de votre position.
+          To show you products nearby and calculate distances, we need your location.
         </p>
 
         {error && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-md text-sm">{error}</div>}
 
         <div className="flex justify-end space-x-3">
           <Button variant="outline" onClick={handleDecline}>
-            Non merci
+            No thanks
           </Button>
           <Button onClick={getPosition}>
             <MapPin className="h-4 w-4 mr-2" />
-            Autoriser
+            Allow
           </Button>
         </div>
       </div>

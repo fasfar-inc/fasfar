@@ -35,8 +35,8 @@ interface NominatimResult {
 export default function AddressAutocompleteFree({
   value,
   onChange,
-  label = "Adresse",
-  placeholder = "Entrez votre adresse",
+  label = "Address",
+  placeholder = "Enter your address",
   required = false,
   onValidationChange,
 }: AddressAutocompleteProps) {
@@ -119,7 +119,7 @@ export default function AddressAutocompleteFree({
             setShowWarning(false)
           }
         } catch (error) {
-          console.error("Erreur lors de la recherche d'adresses:", error)
+          console.error("Error searching for addresses:", error)
           setShowWarning(true)
         } finally {
           setIsLoading(false)
@@ -167,25 +167,25 @@ export default function AddressAutocompleteFree({
               setManuallyEdited(false)
             } else {
               setShowWarning(true)
-              alert("Impossible de déterminer votre adresse. Veuillez l'entrer manuellement.")
+              alert("Unable to determine your address. Please enter it manually.")
             }
           } catch (error) {
             setIsLoading(false)
-            console.error("Erreur lors du géocodage inverse:", error)
+            console.error("Error reverse geocoding:", error)
             setShowWarning(true)
-            alert("Impossible de déterminer votre adresse. Veuillez l'entrer manuellement.")
+            alert("Unable to determine your address. Please enter it manually.")
           }
         },
         (error) => {
           setIsLoading(false)
-          console.error("Erreur de géolocalisation:", error)
+          console.error("Error getting location:", error)
           setShowWarning(true)
-          alert("Impossible d'obtenir votre position. Veuillez entrer votre adresse manuellement.")
+          alert("Unable to get your location. Please enter your address manually.")
         },
       )
     } else {
       setShowWarning(true)
-      alert("La géolocalisation n'est pas prise en charge par votre navigateur.")
+      alert("Location is not supported by your browser.")
     }
   }
 
@@ -210,8 +210,7 @@ export default function AddressAutocompleteFree({
         <Alert variant="destructive" className="mt-2">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            Cette adresse ne semble pas valide. Veuillez sélectionner une adresse dans la liste des suggestions ou
-            utiliser votre position actuelle pour une meilleure précision.
+            This address seems invalid. Please select an address from the suggestions list or use your current location for better accuracy.
           </AlertDescription>
         </Alert>
       )}

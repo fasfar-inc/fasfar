@@ -16,13 +16,13 @@ export async function uploadImage(file: File): Promise<string> {
       try {
         // Vérifier que le fichier est une image
         if (!file.type.startsWith("image/")) {
-          reject(new Error("Le fichier doit être une image"))
+          reject(new Error("The file must be an image"))
           return
         }
   
         // Limiter la taille du fichier (5MB)
         if (file.size > 5 * 1024 * 1024) {
-          reject(new Error("L'image ne doit pas dépasser 5MB"))
+          reject(new Error("The image must not exceed 5MB"))
           return
         }
   
@@ -42,7 +42,7 @@ export async function uploadImage(file: File): Promise<string> {
         }
   
         reader.onerror = () => {
-          reject(new Error("Erreur lors de la lecture du fichier"))
+          reject(new Error("Error reading the file"))
         }
   
         // Lire le fichier comme une URL data
@@ -63,8 +63,8 @@ export async function uploadImage(file: File): Promise<string> {
       const uploadPromises = files.map((file) => uploadImage(file))
       return await Promise.all(uploadPromises)
     } catch (error) {
-      console.error("Erreur lors du téléchargement multiple:", error)
-      throw new Error("Erreur lors du téléchargement des images")
+      console.error("Error uploading multiple images:", error)
+      throw new Error("Error uploading images")
     }
   }
   

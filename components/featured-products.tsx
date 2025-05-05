@@ -41,12 +41,12 @@ export function FeaturedProducts({ products }: FeaturedProductsProps) {
       <div className="container px-4 md:px-6">
         <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
           <div className="space-y-1">
-            <h2 className="text-2xl font-bold tracking-tight md:text-3xl">Produits en vedette</h2>
-            <p className="text-gray-500">Découvrez nos produits les plus populaires près de chez vous.</p>
+            <h2 className="text-2xl font-bold tracking-tight md:text-3xl">Featured products</h2>
+            <p className="text-gray-500">Discover our most popular products near you.</p>
           </div>
           <Link href="/marketplace">
             <Button variant="link" className="gap-1 text-rose-500">
-              Voir tous les produits
+              See all products
               <ArrowRight className="h-4 w-4" />
             </Button>
           </Link>
@@ -58,11 +58,11 @@ export function FeaturedProducts({ products }: FeaturedProductsProps) {
               href={`/product/${product.id}`}
               className="group overflow-hidden rounded-xl border bg-white shadow-sm transition-all hover:shadow-md featured-product"
               onMouseEnter={(e) => {
-                // Effet de surprise: faire apparaître un badge "Populaire"
+                // Surprise effect: make a "Popular" badge appear
                 const badge = document.createElement("div")
                 badge.className =
                   "absolute top-3 right-3 bg-rose-500 text-white px-2 py-1 rounded-full text-xs font-medium transform scale-0 badge-pop"
-                badge.textContent = "Populaire"
+                badge.textContent = "Popular"
                 e.currentTarget.appendChild(badge)
 
                 setTimeout(() => {
@@ -70,7 +70,7 @@ export function FeaturedProducts({ products }: FeaturedProductsProps) {
                 }, 10)
               }}
               onMouseLeave={(e) => {
-                // Supprimer le badge au survol
+                // Remove the badge on hover
                 const badge = e.currentTarget.querySelector(".badge-pop")
                 if (badge) {
                   badge.classList.remove("scale-100")

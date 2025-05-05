@@ -33,26 +33,25 @@ export function CookieConsent() {
       <div className="container mx-auto">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex-1">
-            <h3 className="text-lg font-medium mb-2">Nous respectons votre vie privée</h3>
+            <h3 className="text-lg font-medium mb-2">We respect your privacy</h3>
             <p className="text-sm text-gray-600 mb-2">
-              Nous utilisons des cookies pour améliorer votre expérience, analyser le trafic et personnaliser le
-              contenu. En utilisant notre site, vous consentez à notre utilisation des cookies conformément à notre{" "}
+              We use cookies to improve your experience, analyze traffic and personalize the
+              content. By using our site, you consent to our use of cookies in accordance with our{" "}
               <Link href="/privacy" className="text-rose-500 hover:underline">
-                politique de confidentialité
+                privacy policy
               </Link>
               .
             </p>
             <p className="text-sm text-gray-600">
-              <strong>Note importante :</strong> Fasfar utilise la géolocalisation pour vous montrer les produits à
-              proximité. Vous serez invité à l'activer lors de l'utilisation de la carte.
+              <strong>Important note:</strong> Fasfar uses geolocation to show you products nearby. You will be invited to activate it when using the map.
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-2">
             <Button variant="outline" onClick={acceptEssential}>
-              Cookies essentiels uniquement
+              Essential cookies only
             </Button>
             <Button className="bg-rose-500 hover:bg-rose-600" onClick={acceptAll}>
-              Accepter tous les cookies
+              Accept all cookies
             </Button>
           </div>
           <button

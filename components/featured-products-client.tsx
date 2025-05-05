@@ -81,12 +81,12 @@ export function FeaturedProductsClient({ products }: FeaturedProductsProps) {
       <div className="container px-4 md:px-6">
         <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
           <div className="space-y-1">
-            <h2 className="text-2xl font-bold tracking-tight md:text-3xl">Nouvelles Arrivages</h2>
-            <p className="text-gray-500">Découvrez les produits fraîchement ajoutés près de chez vous.</p>
+            <h2 className="text-2xl font-bold tracking-tight md:text-3xl">New arrivals</h2>
+            <p className="text-gray-500">Discover the freshly added products near you.</p>
           </div>
           <Link href="/marketplace">
             <Button variant="link" className="gap-1 text-rose-500">
-              Voir tous les produits
+              See all products
               <ArrowRight className="h-4 w-4" />
             </Button>
           </Link>
@@ -147,7 +147,7 @@ export function FeaturedProductsClient({ products }: FeaturedProductsProps) {
                   {product.distance !== null ? (
                     <span className="ml-auto">{product.distance} km</span>
                   ) : (
-                    <span className="ml-auto text-gray-400">Distance inconnue</span>
+                    <span className="ml-auto text-gray-400">Unknown distance</span>
                   )}
                 </div>
               </div>

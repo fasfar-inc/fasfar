@@ -27,39 +27,75 @@ export default async function MyAnnouncementsPage() {
         },
       },
       category: true,
+      seller: {
+        select: {
+          id: true,
+          _count: {
+            select: {
+              reviewsReceived: true,
+            },
+          },
+          reviewsReceived: {
+            select: {
+              rating: true,
+            },
+          },
+        },
+      },
     },
     orderBy: {
       createdAt: "desc",
     },
   })
 
+  const productsWithRating = products.map(product => ({
+    ...product,
+    seller: {
+      rating: product.seller.reviewsReceived.length > 0
+        ? product.seller.reviewsReceived.reduce((acc, review) => acc + review.rating, 0) / product.seller.reviewsReceived.length
+        : null,
+    },
+  }))
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Mes annonces</h1>
+        <h1 className="text-3xl font-bold">My announcements</h1>
         <Link href="/create-product">
           <Button>
             <Plus className="mr-2 h-4 w-4" />
-            Nouvelle annonce
+            New announcement
           </Button>
         </Link>
       </div>
 
-      {products.length === 0 ? (
+      {productsWithRating.length === 0 ? (
         <div className="text-center py-12">
-          <h2 className="text-xl font-semibold mb-4">Vous n'avez pas encore d'annonces</h2>
-          <p className="text-gray-500 mb-6">Commencez à vendre vos articles en créant votre première annonce.</p>
+          <h2 className="text-xl font-semibold mb-4">You don't have any announcements yet</h2>
+          <p className="text-gray-500 mb-6">Start selling your items by creating your first announcement.</p>
           <Link href="/create-product">
             <Button>
               <Plus className="mr-2 h-4 w-4" />
-              Créer une annonce
+              Create an announcement
             </Button>
           </Link>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
+          {productsWithRating.map((product) => (
+            <ProductCard 
+              key={product.id} 
+              product={{
+                id: product.id,
+                title: product.title,
+                price: product.price,
+                location: product.location,
+                condition: product.condition,
+                isSold: product.isSold,
+                images: product.images,
+                seller: product.seller,
+              }} 
+            />
           ))}
         </div>
       )}

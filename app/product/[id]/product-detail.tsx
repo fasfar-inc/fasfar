@@ -83,7 +83,7 @@ interface ProductDetail {
   isActive: boolean
   isSold: boolean
   viewsCount: number
-  productImages: ProductImage[]
+  images: ProductImage[]
   seller: ProductSeller
   primaryImage?: string
   favoritesCount: number
@@ -97,37 +97,37 @@ function formatDate(dateString: string): string {
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
 
   if (diffDays === 0) {
-    return "Aujourd'hui"
+    return "Today"
   } else if (diffDays === 1) {
-    return "Hier"
+    return "Yesterday"
   } else if (diffDays < 7) {
-    return `Il y a ${diffDays} jours`
+    return `There are ${diffDays} days ago`
   } else if (diffDays < 30) {
-    return `Il y a ${Math.floor(diffDays / 7)} semaine${Math.floor(diffDays / 7) > 1 ? "s" : ""}`
+    return `There are ${Math.floor(diffDays / 7)} week${Math.floor(diffDays / 7) > 1 ? "s" : ""}`
   } else if (diffDays < 365) {
-    return `Il y a ${Math.floor(diffDays / 30)} mois`
+    return `There are ${Math.floor(diffDays / 30)} month${Math.floor(diffDays / 30) > 1 ? "s" : ""}`
   } else {
-    return `Il y a ${Math.floor(diffDays / 365)} an${Math.floor(diffDays / 365) > 1 ? "s" : ""}`
+    return `There are ${Math.floor(diffDays / 365)} year${Math.floor(diffDays / 365) > 1 ? "s" : ""}`
   }
 }
 
 // Fonction pour formater les catégories
 function formatCategory(category: string): string {
   const categoryMap: Record<string, string> = {
-    ELECTRONICS: "Électronique",
-    CLOTHING: "Vêtements",
-    FURNITURE: "Mobilier",
-    BOOKS: "Livres",
-    TOYS: "Jouets",
+    ELECTRONICS: "Electronics",
+    CLOTHING: "Clothing",
+    FURNITURE: "Furniture",
+    BOOKS: "Books",
+    TOYS: "Toys",
     SPORTS: "Sports",
-    VEHICLES: "Véhicules",
-    JEWELRY: "Bijoux",
-    HOME_APPLIANCES: "Électroménager",
-    BEAUTY: "Beauté",
-    GARDEN: "Jardin",
-    MUSIC: "Musique",
+    VEHICLES: "Vehicles",
+    JEWELRY: "Jewelry",
+    HOME_APPLIANCES: "Home appliances",
+    BEAUTY: "Beauty",
+    GARDEN: "Garden",
+    MUSIC: "Music",
     COLLECTIBLES: "Collections",
-    OTHER: "Autre",
+    OTHER: "Other",
   }
 
   return categoryMap[category] || category
@@ -136,11 +136,11 @@ function formatCategory(category: string): string {
 // Fonction pour formater les conditions
 function formatCondition(condition: string): string {
   const conditionMap: Record<string, string> = {
-    NEW: "Neuf",
-    LIKE_NEW: "Comme neuf",
-    GOOD: "Bon état",
-    FAIR: "État correct",
-    POOR: "État moyen",
+    NEW: "New",
+    LIKE_NEW: "Like new",
+    GOOD: "Good",
+    FAIR: "Fair",
+    POOR: "Poor",
   }
 
   return conditionMap[condition] || condition
@@ -152,7 +152,7 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
   const { toast } = useToast()
   const { latitude, longitude } = useGeolocation()
 
-  const [mainImage, setMainImage] = useState<string | null>(product.primaryImage || product.productImages[0]?.imageUrl || null)
+  const [mainImage, setMainImage] = useState<string | null>(product.primaryImage || product.images[0]?.imageUrl || null)
   const [isFavorite, setIsFavorite] = useState(false)
   const [zoomedImage, setZoomedImage] = useState<string | null>(null)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
@@ -191,7 +191,7 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
           setIsFavorite(data.isFavorited)
         }
       } catch (error) {
-        console.error("Erreur lors de la vérification des favoris:", error)
+        console.error("Error checking favorites:", error)
       }
     }
 
@@ -309,25 +309,25 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
   // Fonction pour naviguer entre les images en mode plein écran
   const navigateImages = useCallback(
     (direction: "next" | "prev") => {
-      if (!zoomedImage || !product.productImages) return
+      if (!zoomedImage || !product.images) return
 
       // Réinitialiser le zoom et la position lors du changement d'image
       setZoomLevel(1)
       setPosition2({ x: 0, y: 0 })
 
-      const currentIndex = product.productImages.findIndex((img) => img.imageUrl === zoomedImage)
+      const currentIndex = product.images.findIndex((img) => img.imageUrl === zoomedImage)
       let newIndex
 
       if (direction === "next") {
-        newIndex = (currentIndex + 1) % product.productImages.length
+        newIndex = (currentIndex + 1) % product.images.length
       } else {
-        newIndex = (currentIndex - 1 + product.productImages.length) % product.productImages.length
+        newIndex = (currentIndex - 1 + product.images.length) % product.images.length
       }
 
-      setZoomedImage(product.productImages[newIndex].imageUrl)
+      setZoomedImage(product.images[newIndex].imageUrl)
       setCurrentImageIndex(newIndex)
     },
-    [zoomedImage, product.productImages],
+    [zoomedImage, product.images],
   )
 
   // Fonctions de zoom
@@ -394,8 +394,8 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
   const toggleFavorite = async () => {
     if (!session) {
       toast({
-        title: "Connexion requise",
-        description: "Veuillez vous connecter pour ajouter des produits à vos favoris.",
+        title: "Connection required",
+        description: "Please connect to add products to your favorites.",
         variant: "destructive",
       })
       return
@@ -411,20 +411,20 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
       })
 
       if (!response.ok) {
-        throw new Error("Erreur lors de la mise à jour des favoris")
+        throw new Error("Error updating favorites")
       }
 
       setIsFavorite(!isFavorite)
 
       toast({
-        title: isFavorite ? "Retiré des favoris" : "Ajouté aux favoris",
-        description: isFavorite ? "Ce produit a été retiré de vos favoris." : "Ce produit a été ajouté à vos favoris.",
+        title: isFavorite ? "Removed from favorites" : "Added to favorites",
+        description: isFavorite ? "This product has been removed from your favorites." : "This product has been added to your favorites.",
       })
     } catch (error) {
-      console.error("Erreur lors de la mise à jour des favoris:", error)
+      console.error("Error updating favorites:", error)
       toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la mise à jour des favoris.",
+        title: "Error",
+        description: "An error occurred while updating favorites.",
         variant: "destructive",
       })
     }
@@ -440,21 +440,21 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
       })
 
       if (!response.ok) {
-        throw new Error("Erreur lors de la suppression du produit")
+        throw new Error("Error deleting the product")
       }
 
       toast({
-        title: "Produit supprimé",
-        description: "Votre produit a été supprimé avec succès.",
+        title: "Product deleted",
+        description: "Your product has been deleted successfully.",
       })
 
       // Rediriger vers la page de profil
       router.push("/profile")
     } catch (error) {
-      console.error("Erreur lors de la suppression du produit:", error)
+      console.error("Error deleting the product:", error)
       toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la suppression du produit.",
+        title: "Error",
+        description: "An error occurred while deleting the product.",
         variant: "destructive",
       })
     }
@@ -462,8 +462,8 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
 
   // Préparer les détails du produit pour l'affichage
   const productDetails = [
-    { label: "Catégorie", value: formatCategory(product.category) },
-    { label: "État", value: formatCondition(product.condition) },
+    { label: "Category", value: formatCategory(product.category) },
+    { label: "Condition", value: formatCondition(product.condition) },
   ]
 
   return (
@@ -500,7 +500,7 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
             >
               <Image
                 src={zoomedImage || "/placeholder.svg"}
-                alt="Image zoomée"
+                alt="Zoomed image"
                 width={1200}
                 height={1200}
                 className="max-h-[90vh] max-w-[90vw] object-contain"
@@ -587,14 +587,14 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
 
             {/* Image counter */}
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/60 text-white px-3 py-1 rounded-full text-sm">
-              {currentImageIndex + 1} / {product.productImages.length}
+              {currentImageIndex + 1} / {product.images.length}
             </div>
 
             {/* Indicateur de zoom */}
             {zoomLevel > 1 && (
               <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-black/60 text-white px-3 py-1 rounded-full text-sm flex items-center">
                 <Move className="h-4 w-4 mr-2" />
-                Déplacez l'image
+                Move the image
               </div>
             )}
           </div>
@@ -607,7 +607,7 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
           className="mb-6 flex items-center text-sm font-medium text-gray-500 hover:text-gray-900"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Retour au marketplace
+          Back to the marketplace
         </Link>
 
         <div className="grid gap-6 lg:grid-cols-2 lg:gap-12">
@@ -625,7 +625,7 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
               />
             </div>
             <div className="flex space-x-2 overflow-x-auto pb-2">
-              {product.productImages.map((image, index) => (
+              {product.images.map((image, index) => (
                 <button
                   key={index}
                   onClick={() => setMainImage(image.imageUrl)}
@@ -670,11 +670,11 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
                     className={isFavorite ? "text-rose-500" : ""}
                   >
                     <Heart className={`h-5 w-5 ${isFavorite ? "fill-rose-500" : ""}`} />
-                    <span className="sr-only">Ajouter aux favoris</span>
+                    <span className="sr-only">Add to favorites</span>
                   </Button>
                   <Button variant="ghost" size="icon">
                     <Share2 className="h-5 w-5" />
-                    <span className="sr-only">Partager</span>
+                    <span className="sr-only">Share</span>
                   </Button>
                 </div>
               </div>
@@ -686,7 +686,7 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
                 {product.latitude && product.longitude && (
                   <>
                     <span className="mx-2">•</span>
-                    <span>{distance !== null ? `${distance.toFixed(1)} km` : "Distance inconnue"}</span>
+                    <span>{distance !== null ? `${distance.toFixed(1)} km` : "Unknown distance"}</span>
                   </>
                 )}
                 <span className="mx-2">•</span>
@@ -703,7 +703,7 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
                     className="flex items-center"
                   >
                     <Edit className="mr-2 h-4 w-4" />
-                    Modifier
+                    Modify
                   </Button>
                   <Button
                     variant="outline"
@@ -712,7 +712,7 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
                     className="flex items-center text-red-500 hover:text-red-600 hover:bg-red-50"
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
-                    Supprimer
+                    Delete
                   </Button>
                 </div>
               )}
@@ -739,8 +739,8 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
                       </div>
                       <span className="mx-2">•</span>
                       <span>
-                        Membre depuis{" "}
-                        {new Date(product.seller.createdAt).toLocaleDateString("fr-FR", {
+                        Member since{" "}
+                        {new Date(product.seller.createdAt).toLocaleDateString("en-US", {
                           month: "long",
                           year: "numeric",
                         })}
@@ -760,7 +760,7 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
                       router.push(`/messages/${product.seller.id}?productId=${product.id}`)
                     }}
                   >
-                    Contacter
+                    Contact
                   </Button>
                 )}
               </div>
@@ -793,10 +793,10 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
                   Description
                 </TabsTrigger>
                 <TabsTrigger value="details" className="custom-tab">
-                  Détails
+                  Details
                 </TabsTrigger>
                 <TabsTrigger value="shipping" className="custom-tab">
-                  Livraison
+                  Shipping
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="description" className="mt-4 space-y-4 custom-tab-content">
@@ -814,9 +814,8 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
               </TabsContent>
               <TabsContent value="shipping" className="mt-4 space-y-4 custom-tab-content">
                 <p className="text-gray-700">
-                  Ce produit est disponible pour un retrait en personne à {product.location}.
+                  This product is available for a face-to-face meeting at {product.location}.
                 </p>
-                <p className="text-gray-700">Le vendeur préfère une rencontre en personne pour la transaction.</p>
               </TabsContent>
             </Tabs>
           </div>
@@ -827,15 +826,15 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer ce produit ?</AlertDialogTitle>
+            <AlertDialogTitle>Are you sure you want to delete this product?</AlertDialogTitle>
             <AlertDialogDescription>
-              Cette action est irréversible. Le produit sera définitivement supprimé de la plateforme.
+              This action is irreversible. The product will be permanently deleted from the platform.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={deleteProduct} className="bg-red-500 hover:bg-red-600">
-              Supprimer
+              Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

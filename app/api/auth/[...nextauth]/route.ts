@@ -30,7 +30,7 @@ export const authOptions: NextAuthOptions = {
       name: "Credentials",
       credentials: {
         email: { label: "Email", type: "email" },
-        password: { label: "Mot de passe", type: "password" },
+        password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
@@ -51,7 +51,7 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
-        // Mettre à jour la date de dernière connexion
+        // Update the last login date
         await prisma.user.update({
           where: { id: user.id },
           data: { lastLogin: new Date() },

@@ -6,7 +6,7 @@ import Image from "next/image"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { formatDistanceToNow } from "date-fns"
-import { fr } from "date-fns/locale"
+import { enUS } from "date-fns/locale"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -85,15 +85,15 @@ export default function MessagesPage() {
       setConversations(data)
       setFilteredConversations(data)
     } catch (err) {
-      console.error("Erreur lors du chargement des conversations", err)
-      setError("Erreur lors du chargement des conversations")
+      console.error("Error loading conversations", err)
+      setError("Error loading conversations")
     } finally {
       setIsLoading(false)
     }
   }
 
   if (status === "loading") {
-    return <div className="p-4">Chargement...</div>
+    return <div className="p-4">Loading...</div>
   }
 
   return (
@@ -104,7 +104,7 @@ export default function MessagesPage() {
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
         <Input
           type="text"
-          placeholder="Rechercher dans les conversations..."
+          placeholder="Search in conversations..."
           className="pl-10"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -130,21 +130,21 @@ export default function MessagesPage() {
       ) : error ? (
         <div className="text-center py-8">
           <p className="text-red-500 mb-4">{error}</p>
-          <Button onClick={fetchConversations}>Réessayer</Button>
+          <Button onClick={fetchConversations}>Try again</Button>
         </div>
       ) : filteredConversations.length === 0 ? (
         <div className="text-center py-12">
           <MessageCircle className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-          <h2 className="text-xl font-semibold mb-2">Aucune conversation</h2>
+          <h2 className="text-xl font-semibold mb-2">No conversation</h2>
           <p className="text-gray-500 mb-6">
             {searchTerm
-              ? "Aucune conversation ne correspond à votre recherche."
-              : "Vous n'avez pas encore de conversations. Parcourez les produits pour contacter des vendeurs."}
+              ? "No conversation matches your search."
+              : "You don't have any conversations yet. Browse the products to contact sellers."}
           </p>
           {searchTerm ? (
-            <Button onClick={() => setSearchTerm("")}>Effacer la recherche</Button>
+            <Button onClick={() => setSearchTerm("")}>Clear search</Button>
           ) : (
-            <Button onClick={() => router.push("/marketplace")}>Parcourir les produits</Button>
+            <Button onClick={() => router.push("/marketplace")}>Browse products</Button>
           )}
         </div>
       ) : (
@@ -190,14 +190,14 @@ export default function MessagesPage() {
                         <span className="text-xs text-gray-500 whitespace-nowrap ml-2">
                           {formatDistanceToNow(new Date(conversation.createdAt), {
                             addSuffix: true,
-                            locale: fr,
+                            locale: enUS,
                           })}
                         </span>
                       </div>
                       <p
                         className={`text-sm truncate ${conversation.unreadCount > 0 ? "font-medium" : "text-gray-600"}`}
                       >
-                        {conversation.isReceived ? "" : "Vous: "}
+                        {conversation.isReceived ? "" : "You: "}
                         {conversation.content}
                       </p>
                       {conversation.product && (
@@ -216,9 +216,9 @@ export default function MessagesPage() {
                           <div className="flex-1 min-w-0">
                             <p className="text-xs font-medium truncate">{conversation.product.title}</p>
                             <p className="text-xs text-gray-600">
-                              {conversation.product.price.toLocaleString("fr-FR", {
+                              {conversation.product.price.toLocaleString("en-US", {
                                 style: "currency",
-                                currency: "EUR",
+                                currency: "USD",
                               })}
                             </p>
                           </div>

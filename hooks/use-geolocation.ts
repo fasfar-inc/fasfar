@@ -43,17 +43,17 @@ export function useGeolocation(options?: { forceRefresh?: boolean }) {
           })
         },
         (error) => {
-          let errorMessage = "Erreur de géolocalisation."
+          let errorMessage = "Geolocation error."
 
           switch (error.code) {
             case error.PERMISSION_DENIED:
-              errorMessage = "Vous avez refusé l'accès à votre position."
+              errorMessage = "You have refused access to your position."
               break
             case error.POSITION_UNAVAILABLE:
-              errorMessage = "Les informations de localisation ne sont pas disponibles."
+              errorMessage = "Location information is not available."
               break
             case error.TIMEOUT:
-              errorMessage = "La demande de localisation a expiré."
+              errorMessage = "The location request has expired."
               break
           }
 
@@ -74,7 +74,7 @@ export function useGeolocation(options?: { forceRefresh?: boolean }) {
       setState({
         latitude: null,
         longitude: null,
-        error: "La géolocalisation n'est pas supportée par ce navigateur.",
+        error: "Geolocation is not supported by this browser.",
         loading: false,
       })
     }

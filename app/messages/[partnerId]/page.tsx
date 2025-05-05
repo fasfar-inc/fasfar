@@ -7,7 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
 import { formatDistanceToNow } from "date-fns"
-import { fr } from "date-fns/locale"
+import { enUS } from "date-fns/locale"
 import { Send, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -108,7 +108,7 @@ export default function ConversationPage({
             ? firstMessage.sender
             : {
                 id: partnerId,
-                username: "Vous",
+                username: "You",
                 profileImage: null,
                 isVerified: false,
               },
@@ -127,8 +127,8 @@ export default function ConversationPage({
         fetchPartnerDetails()
       }
     } catch (err) {
-      console.error("Erreur lors du chargement des messages", err)
-      setError("Erreur lors du chargement des messages")
+      console.error("Error loading messages", err)
+      setError("Error loading messages")
     } finally {
       setIsLoading(false)
     }
@@ -150,7 +150,7 @@ export default function ConversationPage({
         })
       }
     } catch (err) {
-      console.error("Erreur lors du chargement des détails du produit", err)
+      console.error("Error loading product details", err)
     }
   }
 
@@ -167,7 +167,7 @@ export default function ConversationPage({
         })
       }
     } catch (err) {
-      console.error("Erreur lors du chargement des détails du partenaire", err)
+      console.error("Error loading partner details", err)
     }
   }
 
@@ -191,15 +191,15 @@ export default function ConversationPage({
       })
 
       if (!response.ok) {
-        throw new Error(`Erreur HTTP: ${response.status}`)
+        throw new Error(`HTTP error: ${response.status}`)
       }
 
       const sentMessage = await response.json()
       setMessages((prev) => [...prev, sentMessage])
       setNewMessage("")
     } catch (err) {
-      console.error("Erreur lors de l'envoi du message", err)
-      setError("Erreur lors de l'envoi du message")
+      console.error("Error sending message", err)
+      setError("Error sending message")
     } finally {
       setIsSending(false)
     }
@@ -210,7 +210,7 @@ export default function ConversationPage({
   }
 
   if (status === "loading") {
-    return <div className="p-4">Chargement...</div>
+    return <div className="p-4">Loading...</div>
   }
 
   return (
@@ -263,9 +263,9 @@ export default function ConversationPage({
               <div className="flex-1 min-w-0">
                 <p className="font-medium truncate">{product.title}</p>
                 <p className="text-sm text-gray-600">
-                  {product.price.toLocaleString("fr-FR", {
+                  {product.price.toLocaleString("en-US", {
                     style: "currency",
-                    currency: "EUR",
+                    currency: "USD",
                   })}
                 </p>
               </div>
@@ -289,11 +289,11 @@ export default function ConversationPage({
         ) : error ? (
           <div className="text-center py-8">
             <p className="text-red-500 mb-4">{error}</p>
-            <Button onClick={fetchMessages}>Réessayer</Button>
+            <Button onClick={fetchMessages}>Try again</Button>
           </div>
         ) : messages.length === 0 ? (
           <div className="text-center py-12 text-gray-500">
-            <p>Aucun message. Commencez la conversation!</p>
+            <p>No message. Start the conversation!</p>
           </div>
         ) : (
           <>
@@ -311,7 +311,7 @@ export default function ConversationPage({
                     <p className="text-xs text-gray-500 mt-1">
                       {formatDistanceToNow(new Date(message.createdAt), {
                         addSuffix: true,
-                        locale: fr,
+                        locale: enUS,
                       })}
                     </p>
                   </div>
@@ -326,7 +326,7 @@ export default function ConversationPage({
       <form onSubmit={sendMessage} className="flex space-x-2">
         <Input
           type="text"
-          placeholder="Écrivez votre message..."
+          placeholder="Write your message..."
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
           disabled={isSending}
@@ -334,7 +334,7 @@ export default function ConversationPage({
         />
         <Button type="submit" disabled={isSending || !newMessage.trim()}>
           <Send className="h-4 w-4 mr-2" />
-          Envoyer
+          Send
         </Button>
       </form>
     </div>

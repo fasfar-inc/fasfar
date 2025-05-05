@@ -25,23 +25,23 @@ export default async function Home() {
               <div className="flex flex-col justify-center space-y-4">
                 <div className="space-y-2">
                   <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none">
-                    Achetez et vendez directement entre particuliers
+                  Buy and sell directly between individuals
                   </h1>
                   <p className="max-w-[600px] text-gray-500 md:text-xl">
-                    Fasfar connecte les vendeurs et acheteurs locaux. Trouvez ce que vous cherchez près de chez vous.
+                  Fasfar connects local sellers and buyers. Find what you're looking for near you.
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
                   <Link href="/marketplace">
                     <Button size="lg" className="bg-rose-500 hover:bg-rose-600">
-                      Explorer le marketplace
+                      Explore
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </Link>
                   <Link href="/map">
                     <Button size="lg" variant="outline">
                       <MapPin className="mr-2 h-4 w-4" />
-                      Voir la carte
+                      Explore the map
                     </Button>
                   </Link>
                 </div>
@@ -68,21 +68,21 @@ export default async function Home() {
             <div className="container px-4 md:px-6">
               <div className="flex flex-col items-center justify-center space-y-4 text-center">
                 <div className="space-y-2">
-                  <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">Rejoignez la communauté Fasfar</h2>
+                  <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">Join the Fasfar commun  ity</h2>
                   <p className="max-w-[600px] text-gray-500 md:text-xl">
-                    Inscrivez-vous aujourd'hui et commencez à acheter et vendre dans votre région.
+                    Sign up today and start buying and selling in your area.
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
                   <Link href="/signup">
                     <Button size="lg" className="bg-rose-500 hover:bg-rose-600">
-                      Créer un compte
+                      Create an account
                     </Button>
                   </Link>
                   <Link href="/map">
                     <Button size="lg" variant="outline">
                       <MapPin className="mr-2 h-4 w-4" />
-                      Explorer la carte
+                      Explore the map
                     </Button>
                   </Link>
                 </div>

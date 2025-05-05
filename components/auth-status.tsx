@@ -30,12 +30,12 @@ export function AuthStatus() {
       <>
         <Link href="/login">
           <Button variant="outline" size="sm">
-            Connexion
+            Login
           </Button>
         </Link>
         <Link href="/signup">
           <Button size="sm" className="bg-rose-500 hover:bg-rose-600">
-            Inscription
+            Sign up
           </Button>
         </Link>
       </>
@@ -57,36 +57,30 @@ export function AuthStatus() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuLabel>Mon compte</DropdownMenuLabel>
+        <DropdownMenuLabel>My account</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <Link href="/profile">
           <DropdownMenuItem>
             <User className="mr-2 h-4 w-4" />
-            <span>Profil</span>
+            <span>Profile</span>
           </DropdownMenuItem>
         </Link>
         <Link href="/product/new">
           <DropdownMenuItem>
             <PlusCircle className="mr-2 h-4 w-4" />
-            <span>Vendre un article</span>
+            <span>Sell an item</span>
           </DropdownMenuItem>
         </Link>
-        <Link href="/profile?tab=products">
+        <Link href="/my-announcements">
           <DropdownMenuItem>
             <Package className="mr-2 h-4 w-4" />
-            <span>Mes annonces</span>
-          </DropdownMenuItem>
-        </Link>
-        <Link href="/profile?tab=settings">
-          <DropdownMenuItem>
-            <Settings className="mr-2 h-4 w-4" />
-            <span>Paramètres</span>
+            <span>My announcements</span>
           </DropdownMenuItem>
         </Link>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/" })}>
           <LogOut className="mr-2 h-4 w-4" />
-          <span>Déconnexion</span>
+          <span>Logout</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

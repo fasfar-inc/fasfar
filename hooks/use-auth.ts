@@ -40,7 +40,7 @@ export function useAuth() {
       const result = await response.json()
 
       if (!response.ok) {
-        throw new Error(result.error || "Une erreur est survenue lors de l'inscription")
+        throw new Error(result.error || "An error occurred during registration")
       }
 
       // Connexion automatique après l'inscription
@@ -51,7 +51,7 @@ export function useAuth() {
       })
 
       if (signInResult?.error) {
-        throw new Error("Impossible de vous connecter automatiquement")
+        throw new Error("Unable to connect automatically")
       }
 
       // Redirection vers la page d'accueil
@@ -59,7 +59,7 @@ export function useAuth() {
       router.refresh()
       return result
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Une erreur est survenue")
+      setError(err instanceof Error ? err.message : "An error occurred")
       return null
     } finally {
       setIsLoading(false)
@@ -78,7 +78,7 @@ export function useAuth() {
       })
 
       if (result?.error) {
-        throw new Error("Email ou mot de passe incorrect")
+        throw new Error("Incorrect email or password")
       }
 
       // Redirection vers la page d'accueil
@@ -86,7 +86,7 @@ export function useAuth() {
       router.refresh()
       return result
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Une erreur est survenue")
+      setError(err instanceof Error ? err.message : "An error occurred")
       return null
     } finally {
       setIsLoading(false)

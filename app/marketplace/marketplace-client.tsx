@@ -216,15 +216,15 @@ export default function MarketplaceClient({ products, pagination, filters }: Mar
                     <circle cx="18" cy="18" r="3"></circle>
                     <path d="m19.5 14.5-3 3"></path>
                   </svg>
-                  <h3 className="mt-4 text-lg font-semibold">Aucun résultat</h3>
+                  <h3 className="mt-4 text-lg font-semibold">No result</h3>  
                   <p className="mt-2 text-sm text-gray-500">
-                    Aucun produit ne correspond à vos critères de recherche. Essayez d'ajuster vos filtres.
+                    No product matches your search criteria. Try adjusting your filters.
                   </p>
                   <button
                     onClick={resetFilters}
                     className="mt-4 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
                   >
-                    Réinitialiser les filtres
+                    Reset filters
                   </button>
                 </div>
               </div>
@@ -265,7 +265,7 @@ export default function MarketplaceClient({ products, pagination, filters }: Mar
                             <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
                             <circle cx="12" cy="10" r="3"></circle>
                           </svg>
-                          <span className="line-clamp-1">{product.location || "Emplacement non spécifié"}</span>
+                          <span className="line-clamp-1">{product.location || "Location not specified"}</span>
                           {product.distance !== undefined && (
                             <span className="ml-auto">{Math.round(product.distance)} km</span>
                           )}
@@ -273,8 +273,8 @@ export default function MarketplaceClient({ products, pagination, filters }: Mar
                         <div className="mt-3 flex items-center justify-between">
                           <span className="text-xs text-gray-500">
                             {product.createdAt
-                              ? new Date(product.createdAt).toLocaleDateString("fr-FR")
-                              : "Date inconnue"}
+                              ? new Date(product.createdAt).toLocaleDateString("en-US")
+                              : "Unknown date"}
                           </span>
                           {product.seller?.rating && (
                             <div className="flex items-center">

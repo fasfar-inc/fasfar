@@ -13,26 +13,26 @@ import { Label } from "@/components/ui/label"
 
 // Définir les catégories avec leurs icônes et noms
 export const categories = [
-  { id: "REAL_ESTATE", name: "Immobilier", icon: "real-estate" },
-  { id: "VEHICLES", name: "Véhicules", icon: "vehicles" },
-  { id: "PHONES", name: "Téléphones", icon: "phones" },
-  { id: "ELECTRONICS", name: "Électronique", icon: "digital-devices" },
-  { id: "HOME_KITCHEN", name: "Maison", icon: "home-kitchen" },
-  { id: "FASHION", name: "Mode", icon: "fashion" },
+  { id: "REAL_ESTATE", name: "Real estate", icon: "real-estate" },
+  { id: "VEHICLES", name: "Vehicles", icon: "vehicles" },
+  { id: "PHONES", name: "Phones", icon: "phones" },
+  { id: "ELECTRONICS", name: "Electronics", icon: "digital-devices" },
+  { id: "HOME_KITCHEN", name: "Home & Kitchen", icon: "home-kitchen" },
+  { id: "FASHION", name: "Fashion", icon: "fashion" },
   { id: "SPORTS", name: "Sports", icon: "sports" },
-  { id: "GARDEN", name: "Jardin", icon: "garden" },
-  { id: "BOOKS", name: "Livres", icon: "books" },
-  { id: "TOYS", name: "Jouets", icon: "toys" },
-  { id: "OTHER", name: "Autre", icon: "other" },
+  { id: "GARDEN", name: "Garden", icon: "garden" },
+  { id: "BOOKS", name: "Books", icon: "books" },
+  { id: "TOYS", name: "Toys", icon: "toys" },
+  { id: "OTHER", name: "Other", icon: "other" },
 ]
 
 // Définir les conditions des produits
 export const conditions = [
-  { id: "NEW", name: "Neuf" },
-  { id: "LIKE_NEW", name: "Comme neuf" },
-  { id: "GOOD", name: "Bon état" },
-  { id: "FAIR", name: "État correct" },
-  { id: "POOR", name: "Mauvais état" },
+  { id: "NEW", name: "New" },
+  { id: "LIKE_NEW", name: "Like new" },
+  { id: "GOOD", name: "Good" },
+  { id: "FAIR", name: "Fair" },
+  { id: "POOR", name: "Poor" },
 ]
 
 export interface FilterValues {
@@ -162,13 +162,13 @@ export function ProductFilters({
               <div className="py-4 space-y-6">
                 {/* Catégories */}
                 <div>
-                  <h3 className="font-medium mb-3">Catégories</h3>
+                  <h3 className="font-medium mb-3">Categories</h3>
                   <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Toutes les catégories" />
+                      <SelectValue placeholder="All categories" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Toutes les catégories</SelectItem>
+                      <SelectItem value="all">All categories</SelectItem>
                       {categories.map((category) => (
                         <SelectItem key={category.id} value={category.id}>
                           {category.name}
@@ -180,13 +180,13 @@ export function ProductFilters({
 
                 {/* État */}
                 <div>
-                  <h3 className="font-medium mb-3">État</h3>
+                  <h3 className="font-medium mb-3">Condition</h3>
                   <Select value={selectedCondition} onValueChange={setSelectedCondition}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Tous les états" />
+                      <SelectValue placeholder="All conditions" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Tous les états</SelectItem>
+                      <SelectItem value="all">All conditions</SelectItem>
                       {conditions.map((condition) => (
                         <SelectItem key={condition.id} value={condition.id}>
                           {condition.name}
@@ -198,7 +198,7 @@ export function ProductFilters({
 
                 {/* Prix */}
                 <div>
-                  <h3 className="font-medium mb-3">Prix (€)</h3>
+                  <h3 className="font-medium mb-3">Price (€)</h3>
                   <div className="flex gap-2 items-center">
                     <Input
                       type="number"
@@ -222,7 +222,7 @@ export function ProductFilters({
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="font-medium">Distance</h3>
-                    <span className="text-sm">{distance === 1000 ? "Toute la France" : `${distance} km`}</span>
+                    <span className="text-sm">{`${distance} km`}</span>
                   </div>
 
                   {hasGeolocation ? (
@@ -242,7 +242,7 @@ export function ProductFilters({
                       </div>
                       <div className="mt-2 text-xs text-gray-500 flex items-center">
                         <MapPin className="h-3 w-3 mr-1" />
-                        Localisation activée
+                        Location enabled
                       </div>
                     </>
                   ) : (
@@ -256,12 +256,12 @@ export function ProductFilters({
                       {isRequestingLocation ? (
                         <>
                           <span className="animate-spin mr-1">⏳</span>
-                          Localisation...
+                          Location...
                         </>
                       ) : (
                         <>
                           <MapPin className="h-4 w-4 mr-2" />
-                          Activer la géolocalisation
+                          Enable location
                         </>
                       )}
                     </Button>
@@ -307,7 +307,7 @@ export function ProductFilters({
 
           <Button variant="outline" className="hidden md:flex items-center gap-2" onClick={onToggleExpandedFilters}>
             <SlidersHorizontal className="h-4 w-4" />
-            Filtres
+            Filters
             {activeFiltersCount > 0 && (
               <Badge variant="secondary" className="ml-1 bg-rose-100 text-rose-600">
                 {activeFiltersCount}
@@ -340,7 +340,7 @@ export function ProductFilters({
 
           {(minPrice || maxPrice) && (
             <Badge variant="secondary" className="bg-rose-50 text-rose-600 border-rose-200">
-              Prix: {minPrice || "0"}€ - {maxPrice || "∞"}€
+              Price: {minPrice || "0"}€ - {maxPrice || "∞"}€
               <button
                 className="ml-1"
                 onClick={() => {
@@ -373,7 +373,7 @@ export function ProductFilters({
           )}
 
           <Button variant="ghost" size="sm" onClick={resetFilters} className="text-xs">
-            Tout effacer
+            Clear all
           </Button>
         </div>
       )}
@@ -386,14 +386,14 @@ export function ProductFilters({
               {/* Catégorie */}
               <div>
                 <Label htmlFor="category" className="text-sm font-medium mb-2 block">
-                  Catégorie
+                  Category
                 </Label>
                 <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                   <SelectTrigger id="category">
-                    <SelectValue placeholder="Toutes les catégories" />
+                    <SelectValue placeholder="All categories" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Toutes les catégories</SelectItem>
+                    <SelectItem value="all">All categories</SelectItem>
                     {categories.map((category) => (
                       <SelectItem key={category.id} value={category.id}>
                         {category.name}
@@ -406,14 +406,14 @@ export function ProductFilters({
               {/* État */}
               <div>
                 <Label htmlFor="condition" className="text-sm font-medium mb-2 block">
-                  État
+                  Condition
                 </Label>
                 <Select value={selectedCondition} onValueChange={setSelectedCondition}>
                   <SelectTrigger id="condition">
-                    <SelectValue placeholder="Tous les états" />
+                    <SelectValue placeholder="All conditions" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Tous les états</SelectItem>
+                    <SelectItem value="all">All conditions</SelectItem>
                     {conditions.map((condition) => (
                       <SelectItem key={condition.id} value={condition.id}>
                         {condition.name}
@@ -425,7 +425,7 @@ export function ProductFilters({
 
               {/* Prix */}
               <div className="col-span-1 md:col-span-2">
-                <Label className="text-sm font-medium mb-2 block">Prix (€)</Label>
+                <Label className="text-sm font-medium mb-2 block">Price (€)</Label>
                 <div className="flex gap-2 items-center">
                   <Input
                     type="number"
@@ -450,7 +450,7 @@ export function ProductFilters({
                 <div className="flex items-center justify-between mb-2">
                   <Label className="text-sm font-medium">Distance</Label>
                   <span className="text-sm font-medium text-rose-500">
-                    {distance === 1000 ? "Toute la France" : `${distance} km`}
+                    {`${distance} km`}
                   </span>
                 </div>
 
@@ -481,12 +481,12 @@ export function ProductFilters({
                     {isRequestingLocation ? (
                       <>
                         <span className="animate-spin mr-1">⏳</span>
-                        Localisation...
+                        Location...
                       </>
                     ) : (
                       <>
                         <MapPin className="h-4 w-4 mr-2" />
-                        Activer la géolocalisation
+                        Enable location
                       </>
                     )}
                   </Button>

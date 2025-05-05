@@ -33,15 +33,15 @@ export default function CategoryCard({ category }: { category: Category }) {
           <div className={`rounded-full p-3 ${colorClass}`}>
             {iconDef?.icon && React.createElement(iconDef.icon, { className: "h-6 w-6" })}
           </div>
-          <span className="text-sm text-gray-500">{category.productCount} annonces</span>
+          <span className="text-sm text-gray-500">{category.productCount} announcements</span>
         </div>
         <h2 className="text-xl font-bold mt-4">{category.name}</h2>
         <p className="text-gray-500 text-sm mt-1">
-          {category.description || `Explorez tous les produits ${category.name.toLowerCase()}`}
+          {category.description || `Explore all products ${category.name.toLowerCase()}`}
         </p>
 
         <div className="mt-4">
-          <h3 className="text-sm font-medium text-gray-700 mb-2">Sous-catégories populaires</h3>
+          <h3 className="text-sm font-medium text-gray-700 mb-2">Popular subcategories</h3>
           <div className="flex flex-wrap gap-2">
             {category.subcategories.slice(0, 4).map((subcategory) => (
               <Link
@@ -54,7 +54,7 @@ export default function CategoryCard({ category }: { category: Category }) {
             ))}
             {category.subcategories.length > 4 && (
               <span className="text-xs text-gray-500 flex items-center">
-                +{category.subcategories.length - 4} autres
+                +{category.subcategories.length - 4} other
               </span>
             )}
           </div>
@@ -63,7 +63,7 @@ export default function CategoryCard({ category }: { category: Category }) {
         <div className="mt-6">
           <Link href={`/marketplace?category=${category.slug}`}>
             <Button variant="outline" className="w-full">
-              Voir tous les {category.name.toLowerCase()}
+              See all {category.name.toLowerCase()}
             </Button>
           </Link>
         </div>

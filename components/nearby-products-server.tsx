@@ -47,7 +47,7 @@ export async function NearbyProductsServer() {
         id: product.id,
         title: product.title,
         price: product.price,
-        location: product.location || "Non spécifié",
+        location: product.location || "Not specified",
         distance,
         image: product.images[0]?.imageUrl || "/diverse-products-still-life.png",
       }

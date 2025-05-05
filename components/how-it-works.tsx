@@ -35,9 +35,9 @@ export function HowItWorks() {
       <div className="container px-4 md:px-6">
         <div className="flex flex-col items-center justify-center space-y-4 text-center">
           <div className="space-y-2">
-            <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">Comment ça marche</h2>
+            <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">How it works</h2>
             <p className="max-w-[600px] text-gray-500 md:text-xl">
-              Fasfar rend l'achat et la vente entre particuliers simple et sécurisé.
+              Fasfar makes buying and selling between individuals simple and secure.
             </p>
           </div>
         </div>
@@ -45,23 +45,23 @@ export function HowItWorks() {
           {[
             {
               icon: UserCircle,
-              title: "1. Créez un compte",
-              description: "Inscrivez-vous gratuitement et complétez votre profil en quelques minutes.",
+              title: "1. Create an account",
+              description: "Sign up for free and complete your profile in a few minutes.",
             },
             {
               icon: ShoppingBag,
-              title: "2. Publiez ou recherchez",
-              description: "Mettez en vente vos articles ou parcourez les annonces près de chez vous.",
+              title: "2. Publish or search",
+              description: "Sell your items or browse ads near you.",
             },
             {
               icon: Search,
-              title: "3. Contactez et négociez",
-              description: "Discutez avec les vendeurs ou acheteurs et convenez d'un prix et d'un lieu de rencontre.",
+              title: "3. Contact and negotiate",
+              description: "Discuss with sellers or buyers and agree on a price and a meeting place.",
             },
             {
               icon: CheckCircle,
-              title: "4. Finalisez la transaction",
-              description: "Rencontrez-vous en personne pour échanger l'article et le paiement en toute sécurité.",
+              title: "4. Finalize the transaction",
+              description: "Meet in person to exchange the item and pay securely.",
             },
           ].map((step, index) => (
             <div key={index} className="flex flex-col items-center text-center step-card">

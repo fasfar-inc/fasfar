@@ -34,7 +34,7 @@ export default function LocationPickerMap({
       try {
         // Créer la carte
         const map = L.map(mapContainerRef.current).setView(
-          latitude && longitude ? [latitude, longitude] : [46.603354, 1.888334], // Centre de la France par défaut
+          latitude && longitude ? [latitude, longitude] : [35.1264, 33.4299], // Turkey by default
           latitude && longitude ? 15 : 5, // Zoom
         )
 
@@ -85,7 +85,7 @@ export default function LocationPickerMap({
                   `https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.lat}&lon=${position.lng}&zoom=18&addressdetails=1`,
                   {
                     headers: {
-                      "Accept-Language": "fr",
+                      "Accept-Language": "en",
                     },
                   },
                 )
@@ -96,7 +96,7 @@ export default function LocationPickerMap({
                   onLocationChange(position.lat, position.lng)
                 }
               } catch (error) {
-                console.error("Erreur lors du géocodage inverse:", error)
+                console.error("Error reverse geocoding:", error)
                 onLocationChange(position.lat, position.lng)
               }
             }
@@ -175,7 +175,7 @@ export default function LocationPickerMap({
               `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
               {
                 headers: {
-                  "Accept-Language": "fr",
+                  "Accept-Language": "en",
                 },
               },
             )
@@ -186,7 +186,7 @@ export default function LocationPickerMap({
               onLocationChange(lat, lng)
             }
           } catch (error) {
-            console.error("Erreur lors du géocodage inverse:", error)
+            console.error("Error reverse geocoding:", error)
             onLocationChange(lat, lng)
           }
         })
@@ -194,7 +194,7 @@ export default function LocationPickerMap({
         mapRef.current = map
         setIsLoaded(true)
       } catch (error) {
-        console.error("Erreur lors de l'initialisation de la carte:", error)
+        console.error("Error initializing the map:", error)
       }
     }
 
@@ -255,7 +255,7 @@ export default function LocationPickerMap({
               `https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.lat}&lon=${position.lng}&zoom=18&addressdetails=1`,
               {
                 headers: {
-                  "Accept-Language": "fr",
+                  "Accept-Language": "en",
                 },
               },
             )
@@ -266,7 +266,7 @@ export default function LocationPickerMap({
               onLocationChange(position.lat, position.lng)
             }
           } catch (error) {
-            console.error("Erreur lors du géocodage inverse:", error)
+            console.error("Error reverse geocoding:", error)
             onLocationChange(position.lat, position.lng)
           }
         }
@@ -356,7 +356,7 @@ export default function LocationPickerMap({
                     `https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.lat}&lon=${position.lng}&zoom=18&addressdetails=1`,
                     {
                       headers: {
-                        "Accept-Language": "fr",
+                        "Accept-Language": "en",
                       },
                     },
                   )
@@ -367,7 +367,7 @@ export default function LocationPickerMap({
                     onLocationChange(position.lat, position.lng)
                   }
                 } catch (error) {
-                  console.error("Erreur lors du géocodage inverse:", error)
+                  console.error("Error reverse geocoding:", error)
                   onLocationChange(position.lat, position.lng)
                 }
               }
@@ -379,7 +379,7 @@ export default function LocationPickerMap({
                 `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`,
                 {
                   headers: {
-                    "Accept-Language": "fr",
+                    "Accept-Language": "en",
                   },
                 },
               )
@@ -390,18 +390,18 @@ export default function LocationPickerMap({
                 onLocationChange(latitude, longitude)
               }
             } catch (error) {
-              console.error("Erreur lors du géocodage inverse:", error)
+              console.error("Error reverse geocoding:", error)
               onLocationChange(latitude, longitude)
             }
           }
         },
         (error) => {
-          console.error("Erreur de géolocalisation:", error)
-          alert("Impossible d'obtenir votre position.")
+          console.error("Error getting location:", error)
+          alert("Unable to get your location.")
         },
       )
     } else {
-      alert("La géolocalisation n'est pas prise en charge par votre navigateur.")
+      alert("Geolocation is not supported by your browser.")
     }
   }
 

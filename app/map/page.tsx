@@ -146,8 +146,8 @@ export default function MapPage() {
   // Remplacer la fonction handleGeolocationDecline par celle-ci
   const handleGeolocationDecline = () => {
     setShowGeolocationRequest(false)
-    setUserLocation([46.603354, 1.888334]) // Position par défaut
-    setLocationError("Vous avez refusé la géolocalisation. La carte affiche tous les produits disponibles en France.")
+    setUserLocation([35.1264, 33.4299]) // Default position
+    setLocationError("You have refused geolocation. The map will display all products available in Turkey.")
     localStorage.setItem("geolocation-consent", "denied")
 
     // Charger les produits sans filtrage par distance
@@ -190,12 +190,12 @@ export default function MapPage() {
     const diffTime = Math.abs(now.getTime() - date.getTime())
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
 
-    if (diffDays === 0) return "Aujourd'hui"
-    if (diffDays === 1) return "Hier"
-    if (diffDays < 7) return `Il y a ${diffDays} jours`
-    if (diffDays < 30) return `Il y a ${Math.floor(diffDays / 7)} semaine${Math.floor(diffDays / 7) > 1 ? "s" : ""}`
-    if (diffDays < 365) return `Il y a ${Math.floor(diffDays / 30)} mois`
-    return `Il y a ${Math.floor(diffDays / 365)} an${Math.floor(diffDays / 365) > 1 ? "s" : ""}`
+    if (diffDays === 0) return "Today"
+    if (diffDays === 1) return "Yesterday"
+    if (diffDays < 7) return `There was ${diffDays} days ago`
+    if (diffDays < 30) return `There was ${Math.floor(diffDays / 7)} week${Math.floor(diffDays / 7) > 1 ? "s" : ""}`
+    if (diffDays < 365) return `There was ${Math.floor(diffDays / 30)} month${Math.floor(diffDays / 30) > 1 ? "s" : ""}`
+    return `There was ${Math.floor(diffDays / 365)} year${Math.floor(diffDays / 365) > 1 ? "s" : ""}`
   }
 
   const requestGeolocation = () => {
@@ -207,7 +207,7 @@ export default function MapPage() {
       },
       (error) => {
         console.error("Error getting geolocation:", error)
-        setLocationError("Impossible de récupérer votre position. Veuillez réessayer ou autoriser la géolocalisation.")
+        setLocationError("Unable to retrieve your position. Please try again or enable geolocation.")
         setIsRequestingLocation(false)
       },
       {
@@ -231,7 +231,7 @@ export default function MapPage() {
         <div className="mb-6 flex items-center justify-between">
           <Link href="/" className="flex items-center text-sm font-medium text-gray-500 hover:text-gray-900">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Retour à l'accueil
+            Back to home
           </Link>
         </div>
 
@@ -251,12 +251,12 @@ export default function MapPage() {
               {isRequestingLocation ? (
                 <>
                   <span className="animate-spin mr-1">⏳</span>
-                  Localisation...
+                  Location...
                 </>
               ) : (
                 <>
                   <MapPin className="h-3 w-3 mr-1 pulse-location" />
-                  Activer ma position
+                  Enable my position
                 </>
               )}
             </Button>
@@ -292,7 +292,7 @@ export default function MapPage() {
           {/* Liste des produits */}
           <div className="space-y-4">
             <h2 className="text-lg font-medium">
-              {isLoading ? "Chargement des produits..." : `Produits à proximité (${products.length})`}
+              {isLoading ? "Loading products..." : `Products nearby (${products.length})`}
             </h2>
             <div className="space-y-3 max-h-[550px] overflow-y-auto pr-2">
               {isLoading ? (
@@ -349,7 +349,7 @@ export default function MapPage() {
                         <div className="flex items-center justify-between mt-1">
                           <span className="text-xs text-gray-500">{formatRelativeDate(product.createdAt)}</span>
                           <Link href={`/product/${product.id}`} className="text-xs text-rose-500 hover:underline">
-                            Voir
+                            See
                           </Link>
                         </div>
                       </div>
@@ -358,10 +358,10 @@ export default function MapPage() {
                   {products.length === 0 && !isLoading && (
                     <div className="text-center py-8 bg-gray-50 rounded-lg border border-dashed">
                       <MapPin className="h-10 w-10 text-gray-400 mx-auto mb-2" />
-                      <h3 className="font-medium">Aucun produit trouvé</h3>
-                      <p className="text-sm text-gray-500 mt-1">Essayez d'ajuster vos filtres</p>
+                      <h3 className="font-medium">No products found</h3>
+                      <p className="text-sm text-gray-500 mt-1">Try adjusting your filters</p>
                       <Button variant="outline" className="mt-4" onClick={resetFilters}>
-                        Réinitialiser les filtres
+                        Reset filters
                       </Button>
                     </div>
                   )}

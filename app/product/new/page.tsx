@@ -177,20 +177,20 @@ export default function NewProductPage() {
     const newErrors: Record<string, string> = {}
 
     if (currentStep === 0) {
-      if (!formData.title.trim()) newErrors.title = "Le titre est requis"
+      if (!formData.title.trim()) newErrors.title = "The title is required"
       if (!formData.price || isNaN(Number(formData.price)) || Number(formData.price) <= 0) {
-        newErrors.price = "Veuillez entrer un prix valide"
+        newErrors.price = "Please enter a valid price"
       }
-      if (!formData.category) newErrors.category = "La catégorie est requise"
-      if (!formData.condition) newErrors.condition = "L'état du produit est requis"
+      if (!formData.category) newErrors.category = "The category is required"
+      if (!formData.condition) newErrors.condition = "The product condition is required"
     } else if (currentStep === 1) {
-      if (images.length === 0) newErrors.images = "Ajoutez au moins une image"
+      if (images.length === 0) newErrors.images = "Add at least one image"
     } else if (currentStep === 2) {
       if (!formData.location) {
-        newErrors.location = "La localisation est requise"
+        newErrors.location = "The location is required"
       } else if (!addressIsValid) {
         newErrors.location =
-          "Veuillez sélectionner une adresse valide dans la liste ou utiliser votre position actuelle"
+          "Please select a valid address from the list or use your current location"
       }
     }
 
@@ -238,11 +238,11 @@ export default function NewProductPage() {
             return {
               ...img,
               imageUrl: uploadedUrl,
-              file: undefined, // Supprimer le fichier après téléchargement
+              file: undefined, // Delete the file after upload
             }
           } catch (error) {
-            console.error(`Erreur lors du téléchargement de l'image ${index}:`, error)
-            throw new Error(`Échec du téléchargement de l'image ${index + 1}`)
+            console.error(`Error uploading image ${index}:`, error)
+            throw new Error(`Failed to upload image ${index + 1}`)
           }
         })
 
@@ -266,7 +266,7 @@ export default function NewProductPage() {
         })),
       }
 
-      console.log("Données du produit à envoyer:", productData)
+      console.log("Product data to send:", productData)
 
       // Envoyer les données à l'API
       const response = await fetch("/api/products", {
@@ -280,24 +280,24 @@ export default function NewProductPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || data.details || "Une erreur est survenue lors de la création du produit")
+        throw new Error(data.error || data.details || "An error occurred while creating the product")
       }
 
       // Afficher un message de succès
       toast({
-        title: "Produit créé avec succès",
-        description: "Votre produit a été ajouté au marché.",
+        title: "Product created successfully",
+        description: "Your product has been added to the market.",
         variant: "default",
       })
 
       // Rediriger vers la page du produit
       router.push(`/product/${data.id}`)
     } catch (error: any) {
-      console.error("Erreur lors de la création du produit:", error)
-      setApiError(error.message || "Une erreur est survenue lors de la création du produit")
+      console.error("Error creating product:", error)
+      setApiError(error.message || "An error occurred while creating the product")
       toast({
-        title: "Erreur",
-        description: error.message || "Une erreur est survenue lors de la création du produit",
+        title: "Error",
+        description: error.message || "An error occurred while creating the product",
         variant: "destructive",
       })
     } finally {
@@ -327,13 +327,13 @@ export default function NewProductPage() {
                   {images.find((img) => img.isPrimary) ? (
                     <img
                       src={images.find((img) => img.isPrimary)?.preview || images[0].preview}
-                      alt="Image principale"
+                      alt="Main image"
                       className="w-full h-full object-cover"
                     />
                   ) : (
                     <img
                       src={images[0].preview || "/placeholder.svg"}
-                      alt="Image principale"
+                      alt="Main image"
                       className="w-full h-full object-cover"
                     />
                   )}
@@ -366,44 +366,44 @@ export default function NewProductPage() {
             <div className="flex-1">
               <h3 className="text-xl font-bold">{formData.title || "Titre non défini"}</h3>
               <p className="text-2xl font-bold text-rose-500 mt-2">
-                {formData.price ? `${Number(formData.price).toLocaleString()} €` : "Prix non défini"}
+                {formData.price ? `${Number(formData.price).toLocaleString()} €` : "Price not defined"}
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div>
-                  <h4 className="text-sm font-medium text-gray-500">Catégorie</h4>
+                  <h4 className="text-sm font-medium text-gray-500">Category</h4>
                   <p className="mt-1">
                     {formData.category
                       ? {
-                          REAL_ESTATE: "Immobilier",
-                          VEHICLES: "Véhicules",
-                          ELECTRONICS: "Électronique",
-                          HOME_GARDEN: "Maison & Jardin",
-                          CLOTHING: "Vêtements & Accessoires",
-                          SPORTS_LEISURE: "Sports & Loisirs",
-                          TOYS_GAMES: "Jeux & Jouets",
-                          BOOKS_MOVIES_MUSIC: "Livres, Films & Musique",
-                          PETS: "Animaux",
+                          REAL_ESTATE: "Real Estate",
+                          VEHICLES: "Vehicles",
+                          ELECTRONICS: "Electronics",
+                          HOME_GARDEN: "House & Garden",
+                          CLOTHING: "Clothing & Accessories",
+                          SPORTS_LEISURE: "Sports & Leisure",
+                          TOYS_GAMES: "Toys & Games",
+                          BOOKS_MOVIES_MUSIC: "Books, Films & Music",
+                          PETS: "Animals",
                           SERVICES: "Services",
-                          JOBS: "Emploi",
-                          OTHER: "Autre",
+                          JOBS: "Jobs",
+                          OTHER: "Other",
                         }[formData.category]
                       : "Non définie"}
                   </p>
                 </div>
 
                 <div>
-                  <h4 className="text-sm font-medium text-gray-500">État</h4>
+                  <h4 className="text-sm font-medium text-gray-500">Condition</h4>
                   <p className="mt-1">
                     {formData.condition
                       ? {
-                          NEW: "Neuf",
-                          LIKE_NEW: "Comme neuf",
-                          GOOD: "Bon état",
-                          FAIR: "État correct",
-                          POOR: "Mauvais état",
+                          NEW: "New",
+                          LIKE_NEW: "Like new",
+                          GOOD: "Good",
+                          FAIR: "Fair",
+                          POOR: "Poor",
                         }[formData.condition]
-                      : "Non défini"}
+                      : "Not defined"}
                   </p>
                 </div>
               </div>
@@ -411,7 +411,7 @@ export default function NewProductPage() {
               <div className="mt-4">
                 <h4 className="text-sm font-medium text-gray-500">Description</h4>
                 <p className="mt-1 text-sm whitespace-pre-wrap">
-                  {formData.description || "Aucune description fournie"}
+                  {formData.description || "No description provided"}
                 </p>
               </div>
             </div>
@@ -422,11 +422,11 @@ export default function NewProductPage() {
         <div className="bg-gray-50 p-4 rounded-lg">
           <h3 className="font-medium mb-3 flex items-center">
             <MapPin className="h-4 w-4 mr-2 text-rose-500" />
-            Localisation
+            Location
           </h3>
 
           <div className="flex items-start mb-3">
-            <p className="text-sm">{formData.location || "Adresse non spécifiée"}</p>
+            <p className="text-sm">{formData.location || "Address not specified"}</p>
           </div>
 
           {formData.latitude && formData.longitude && (
@@ -455,8 +455,8 @@ export default function NewProductPage() {
           <Alert className="mb-4">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              Veuillez vérifier attentivement toutes les informations avant de publier votre annonce. Une fois publiée,
-              vous pourrez toujours la modifier depuis votre profil.
+              Please carefully check all the information before publishing your ad. Once published,
+              you can always modify it from your profile.
             </AlertDescription>
           </Alert>
 
@@ -475,7 +475,7 @@ export default function NewProductPage() {
               ) : (
                 <>
                   <Save className="h-5 w-5" />
-                  Publier l'annonce
+                  Publish the ad
                 </>
               )}
             </Button>
@@ -487,8 +487,8 @@ export default function NewProductPage() {
 
   return (
     <div className="container py-8">
-      <h1 className="text-3xl font-bold mb-2">Vendre un article</h1>
-      <p className="text-muted-foreground mb-6">Créez une annonce attrayante pour vendre votre article rapidement</p>
+      <h1 className="text-3xl font-bold mb-2">Sell an article</h1>
+      <p className="text-muted-foreground mb-6">Create an attractive ad to sell your product quickly</p>
 
       <FormSteps steps={STEPS} currentStep={currentStep} onStepClick={(step) => setCurrentStep(step)} />
 
@@ -496,10 +496,10 @@ export default function NewProductPage() {
         <CardHeader>
           <CardTitle>{STEPS[currentStep]}</CardTitle>
           <CardDescription>
-            {currentStep === 0 && "Remplissez les informations de base sur votre produit"}
-            {currentStep === 1 && "Ajoutez des photos attrayantes de votre produit"}
-            {currentStep === 2 && "Indiquez où se trouve votre produit"}
-            {currentStep === 3 && "Vérifiez les détails avant de publier votre annonce"}
+            {currentStep === 0 && "Fill in the basic information about your product"}
+            {currentStep === 1 && "Add attractive photos of your product"}
+            {currentStep === 2 && "Indicate where your product is located"}
+            {currentStep === 3 && "Check the details before publishing your ad"}
           </CardDescription>
         </CardHeader>
 
@@ -510,7 +510,7 @@ export default function NewProductPage() {
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="title">
-                    Titre de l'annonce <span className="text-red-500">*</span>
+                    Ad title <span className="text-red-500">*</span>
                   </Label>
                   <Input
                     id="title"
@@ -530,7 +530,7 @@ export default function NewProductPage() {
                     name="description"
                     value={formData.description}
                     onChange={handleInputChange}
-                    placeholder="Décrivez votre article, son état, ses caractéristiques..."
+                    placeholder="Describe your product, its condition, its features..."
                     rows={5}
                   />
                 </div>
@@ -538,7 +538,7 @@ export default function NewProductPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="price">
-                      Prix (€) <span className="text-red-500">*</span>
+                      Price (€) <span className="text-red-500">*</span>
                     </Label>
                     <Input
                       id="price"
@@ -556,17 +556,17 @@ export default function NewProductPage() {
 
                   <div>
                     <Label htmlFor="category">
-                      Catégorie <span className="text-red-500">*</span>
+                      Category <span className="text-red-500">*</span>
                     </Label>
                     <Select value={formData.category} onValueChange={(value) => handleSelectChange("category", value)}>
                       <SelectTrigger id="category" className={errors.category ? "border-red-500" : ""}>
-                        <SelectValue placeholder="Sélectionner une catégorie" />
+                        <SelectValue placeholder="Select a category" />
                       </SelectTrigger>
                       <SelectContent>
                         {isLoadingCategories ? (
-                          <div className="px-3 py-2 text-sm text-gray-500">Chargement...</div>
+                          <div className="px-3 py-2 text-sm text-gray-500">Loading...</div>
                         ) : categories.length === 0 ? (
-                          <div className="px-3 py-2 text-sm text-gray-500">Aucune catégorie</div>
+                          <div className="px-3 py-2 text-sm text-gray-500">No category</div>
                         ) : (
                           categories.map((cat) => (
                             <SelectItem key={cat.slug} value={cat.slug}>
@@ -581,21 +581,21 @@ export default function NewProductPage() {
 
                   <div>
                     <Label htmlFor="condition">
-                      État <span className="text-red-500">*</span>
+                      Condition <span className="text-red-500">*</span>
                     </Label>
                     <Select
                       value={formData.condition}
                       onValueChange={(value) => handleSelectChange("condition", value)}
                     >
                       <SelectTrigger id="condition" className={errors.condition ? "border-red-500" : ""}>
-                        <SelectValue placeholder="Sélectionner l'état" />
+                        <SelectValue placeholder="Select the condition" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="NEW">Neuf</SelectItem>
-                        <SelectItem value="LIKE_NEW">Comme neuf</SelectItem>
-                        <SelectItem value="GOOD">Bon état</SelectItem>
-                        <SelectItem value="FAIR">État correct</SelectItem>
-                        <SelectItem value="POOR">Mauvais état</SelectItem>
+                        <SelectItem value="NEW">New</SelectItem>
+                        <SelectItem value="LIKE_NEW">Like new</SelectItem>
+                        <SelectItem value="GOOD">Good</SelectItem>
+                        <SelectItem value="FAIR">Fair</SelectItem>
+                        <SelectItem value="POOR">Poor</SelectItem>
                       </SelectContent>
                     </Select>
                     {errors.condition && <p className="text-red-500 text-sm mt-1">{errors.condition}</p>}
@@ -607,7 +607,7 @@ export default function NewProductPage() {
             {/* Étape 2: Photos */}
             <div className={currentStep === 1 ? "block" : "hidden"}>
               <div className="space-y-2">
-                <Label htmlFor="images">Images du produit</Label>
+                <Label htmlFor="images">Product images</Label>
                 <ImageUploadWithPreview images={images} onChange={setImages} maxImages={5} />
               </div>
               {errors.images && <p className="text-red-500 text-sm mt-1">{errors.images}</p>}
@@ -620,8 +620,8 @@ export default function NewProductPage() {
                   <AddressAutocompleteFree
                     value={formData.location}
                     onChange={handleAddressChange}
-                    label="Localisation du produit"
-                    placeholder="Entrez l'adresse où se trouve le produit"
+                    label="Product location"
+                    placeholder="Enter the address where the product is located"
                     required
                     onValidationChange={setAddressIsValid}
                   />
@@ -656,7 +656,7 @@ export default function NewProductPage() {
                       <MapPin className="h-8 w-8 text-muted-foreground" />
                     </div>
                     <p className="mt-2 text-sm text-muted-foreground">
-                      Entrez une adresse ou utilisez votre position actuelle pour afficher la carte
+                      Enter an address or use your current location to display the map
                     </p>
                   </div>
                 )}
@@ -677,7 +677,7 @@ export default function NewProductPage() {
             className="flex items-center gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            Précédent
+            Previous
           </Button>
 
           {currentStep < STEPS.length - 1 ? (
@@ -686,7 +686,7 @@ export default function NewProductPage() {
               onClick={handleNextStep}
               className="bg-rose-500 hover:bg-rose-600 flex items-center gap-2"
             >
-              Suivant
+              Next
               <ArrowRight className="h-4 w-4" />
             </Button>
           ) : null}

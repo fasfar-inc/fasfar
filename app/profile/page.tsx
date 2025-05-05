@@ -88,7 +88,7 @@ export default function ProfilePage() {
         })
       }
     } catch (error) {
-      console.error("Erreur lors du chargement des données utilisateur:", error)
+      console.error("Error loading user data:", error)
     } finally {
       setIsLoading(false)
     }
@@ -102,7 +102,7 @@ export default function ProfilePage() {
         setUserProducts(data.products)
       }
     } catch (error) {
-      console.error("Erreur lors du chargement des produits:", error)
+      console.error("Error loading user products:", error)
     }
   }
 
@@ -130,22 +130,22 @@ export default function ProfilePage() {
         setUser(updatedUser)
         setIsEditing(false)
         toast({
-          title: "Profil mis à jour",
-          description: "Vos informations ont été mises à jour avec succès.",
+          title: "Profile updated",
+          description: "Your information has been updated successfully.",
         })
       } else {
         const error = await response.json()
         toast({
-          title: "Erreur",
-          description: error.error || "Une erreur est survenue lors de la mise à jour du profil",
+          title: "Error",
+          description: error.error || "An error occurred while updating the profile",
           variant: "destructive",
         })
       }
     } catch (error) {
-      console.error("Erreur lors de la mise à jour du profil:", error)
+      console.error("Error updating profile:", error)
       toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la mise à jour du profil",
+        title: "Error",
+        description: "An error occurred while updating the profile",
         variant: "destructive",
       })
     } finally {
@@ -166,22 +166,22 @@ export default function ProfilePage() {
         // Mettre à jour la liste des produits
         setUserProducts(userProducts.filter((product) => product.id !== deleteProductId))
         toast({
-          title: "Produit supprimé",
-          description: "Votre produit a été supprimé avec succès.",
+          title: "Product deleted",
+          description: "Your product has been deleted successfully.",
         })
       } else {
         const error = await response.json()
         toast({
-          title: "Erreur",
-          description: error.error || "Une erreur est survenue lors de la suppression du produit",
+          title: "Error",
+          description: error.error || "An error occurred while deleting the product",
           variant: "destructive",
         })
       }
     } catch (error) {
-      console.error("Erreur lors de la suppression du produit:", error)
+      console.error("Error deleting product:", error)
       toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la suppression du produit",
+        title: "Error",
+        description: "An error occurred while deleting the product",
         variant: "destructive",
       })
     } finally {
@@ -202,13 +202,13 @@ export default function ProfilePage() {
       <div className="container py-10">
         <Card>
           <CardHeader>
-            <CardTitle>Profil non trouvé</CardTitle>
+            <CardTitle>Profile not found</CardTitle>
             <CardDescription>
-              Impossible de charger les informations du profil. Veuillez vous connecter.
+              Unable to load profile information. Please login.
             </CardDescription>
           </CardHeader>
           <CardFooter>
-            <Button onClick={() => router.push("/login")}>Se connecter</Button>
+            <Button onClick={() => router.push("/login")}>Login</Button>
           </CardFooter>
         </Card>
       </div>
@@ -220,27 +220,27 @@ export default function ProfilePage() {
         <div className="mb-6 flex items-center justify-between">
           <Link href="/" className="flex items-center text-sm font-medium text-gray-500 hover:text-gray-900">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Retour à l'accueil
+            Back to home
           </Link>
         </div>
-      <h1 className="text-3xl font-bold mb-6">Mon profil</h1>
+      <h1 className="text-3xl font-bold mb-6">My profile</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Carte de profil */}
         <Card className="lg:col-span-1">
           <CardHeader>
             <div className="flex justify-between items-start">
-              <CardTitle>Informations personnelles</CardTitle>
+              <CardTitle>Personal information</CardTitle>
               {!isEditing ? (
                 <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)}>
                   <Edit className="h-4 w-4 mr-2" />
-                  Modifier
+                  Edit
                 </Button>
               ) : (
                 <div className="flex space-x-2">
                   <Button variant="ghost" size="sm" onClick={() => setIsEditing(false)}>
                     <X className="h-4 w-4 mr-2" />
-                    Annuler
+                    Cancel
                   </Button>
                 </div>
               )}
@@ -261,7 +261,7 @@ export default function ProfilePage() {
                     </p>
                     {user.isVerified && (
                       <Badge variant="outline" className="mt-2 bg-green-50 text-green-600 border-green-200">
-                        Vérifié
+                        Verified
                       </Badge>
                     )}
                   </div>
@@ -289,7 +289,7 @@ export default function ProfilePage() {
                   <div className="flex items-center">
                     <Calendar className="h-4 w-4 mr-2" />
                     <span>
-                      Membre depuis{" "}
+                      Member since{" "}
                       {format(new Date(user.createdAt), "MMMM yyyy", {
                         locale: fr,
                       })}
@@ -299,7 +299,7 @@ export default function ProfilePage() {
 
                 {user.bio && (
                   <div className="pt-4 border-t">
-                    <h3 className="font-medium mb-2">À propos</h3>
+                    <h3 className="font-medium mb-2">About</h3>
                     <p className="text-sm text-muted-foreground">{user.bio}</p>
                   </div>
                 )}
@@ -308,7 +308,7 @@ export default function ProfilePage() {
                   <h3 className="font-medium mb-2">Contact</h3>
                   <div className="space-y-1 text-sm">
                     <p>Email: {user.email}</p>
-                    {user.phone && <p>Téléphone: {user.phone}</p>}
+                    {user.phone && <p>Phone: {user.phone}</p>}
                   </div>
                 </div>
               </div>
@@ -323,20 +323,20 @@ export default function ProfilePage() {
                     <AvatarFallback>{user.username?.substring(0, 2).toUpperCase()}</AvatarFallback>
                   </Avatar>
                   <div className="w-full">
-                    <Label htmlFor="profileImage">URL de l'image de profil</Label>
+                    <Label htmlFor="profileImage">URL of the profile image</Label>
                     <Input
                       id="profileImage"
                       name="profileImage"
                       value={formData.profileImage}
                       onChange={handleInputChange}
-                      placeholder="URL de l'image"
+                      placeholder="URL of the profile image"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-2">
-                    <Label htmlFor="username">Nom d'utilisateur</Label>
+                    <Label htmlFor="username">Username</Label>
                     <Input
                       id="username"
                       name="username"
@@ -346,11 +346,11 @@ export default function ProfilePage() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="firstName">Prénom</Label>
+                    <Label htmlFor="firstName">First name</Label>
                     <Input id="firstName" name="firstName" value={formData.firstName} onChange={handleInputChange} />
                   </div>
                   <div>
-                    <Label htmlFor="lastName">Nom</Label>
+                    <Label htmlFor="lastName">Last name</Label>
                     <Input id="lastName" name="lastName" value={formData.lastName} onChange={handleInputChange} />
                   </div>
                   <div className="col-span-2">
@@ -365,19 +365,19 @@ export default function ProfilePage() {
                     />
                   </div>
                   <div className="col-span-2">
-                    <Label htmlFor="phone">Téléphone</Label>
+                    <Label htmlFor="phone">Phone</Label>
                     <Input id="phone" name="phone" value={formData.phone} onChange={handleInputChange} />
                   </div>
                   <div className="col-span-2">
-                    <Label htmlFor="city">Ville</Label>
+                    <Label htmlFor="city">City</Label>
                     <Input id="city" name="city" value={formData.city} onChange={handleInputChange} />
                   </div>
                   <div className="col-span-2">
-                    <Label htmlFor="address">Adresse</Label>
+                    <Label htmlFor="address">Address</Label>
                     <Input id="address" name="address" value={formData.address} onChange={handleInputChange} />
                   </div>
                   <div className="col-span-2">
-                    <Label htmlFor="postalCode">Code postal</Label>
+                    <Label htmlFor="postalCode">Postal code</Label>
                     <Input id="postalCode" name="postalCode" value={formData.postalCode} onChange={handleInputChange} />
                   </div>
                   <div className="col-span-2">
@@ -390,12 +390,12 @@ export default function ProfilePage() {
                   {isSaving ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Enregistrement...
+                      Saving...
                     </>
                   ) : (
                     <>
                       <Save className="mr-2 h-4 w-4" />
-                      Enregistrer les modifications
+                      Save changes
                     </>
                   )}
                 </Button>
@@ -408,15 +408,15 @@ export default function ProfilePage() {
         <div className="lg:col-span-2">
           <Tabs defaultValue="products">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="products">Mes produits</TabsTrigger>
-              <TabsTrigger value="reviews">Avis reçus</TabsTrigger>
+              <TabsTrigger value="products">My products</TabsTrigger>
+              <TabsTrigger value="reviews">Received reviews</TabsTrigger>
             </TabsList>
             <TabsContent value="products" className="mt-6">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold">Mes annonces</h2>
+                <h2 className="text-xl font-semibold">My products</h2>
                 <Button onClick={() => router.push("/product/new")} className="bg-rose-500 hover:bg-rose-600">
                   <Plus className="mr-2 h-4 w-4" />
-                  Ajouter une annonce
+                  Add a product
                 </Button>
               </div>
 
@@ -459,7 +459,7 @@ export default function ProfilePage() {
                             <div className="flex space-x-2">
                               <Button variant="ghost" size="sm" onClick={() => router.push(`/product/${product.id}`)}>
                                 <Eye className="h-4 w-4 mr-2" />
-                                Voir
+                                View
                               </Button>
                               <Button
                                 variant="ghost"
@@ -467,7 +467,7 @@ export default function ProfilePage() {
                                 onClick={() => router.push(`/product/edit/${product.id}`)}
                               >
                                 <Pencil className="h-4 w-4 mr-2" />
-                                Modifier
+                                Edit
                               </Button>
                               <Button
                                 variant="ghost"
@@ -476,7 +476,7 @@ export default function ProfilePage() {
                                 onClick={() => setDeleteProductId(product.id)}
                               >
                                 <Trash2 className="h-4 w-4 mr-2" />
-                                Supprimer
+                                Delete
                               </Button>
                             </div>
                           </div>
@@ -488,12 +488,12 @@ export default function ProfilePage() {
               ) : (
                 <Card>
                   <CardHeader>
-                    <CardTitle>Aucun produit</CardTitle>
-                    <CardDescription>Vous n'avez pas encore mis de produits en vente.</CardDescription>
+                    <CardTitle>No product</CardTitle>
+                    <CardDescription>You have not yet put any products for sale.</CardDescription>
                   </CardHeader>
                   <CardFooter>
                     <Button onClick={() => router.push("/product/new")} className="bg-rose-500 hover:bg-rose-600">
-                      Vendre un article
+                      Sell an article
                     </Button>
                   </CardFooter>
                 </Card>
@@ -502,11 +502,11 @@ export default function ProfilePage() {
             <TabsContent value="reviews" className="mt-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Avis reçus</CardTitle>
-                  <CardDescription>Les avis laissés par d'autres utilisateurs sur vos transactions.</CardDescription>
+                  <CardTitle>Received reviews</CardTitle>
+                  <CardDescription>Reviews left by other users on your transactions.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground">Fonctionnalité en cours de développement.</p>
+                  <p className="text-muted-foreground">Feature under development.</p>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -514,19 +514,19 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* Boîte de dialogue de confirmation de suppression */}
+      {/* Confirmation dialog box for product deletion */}
       <AlertDialog open={deleteProductId !== null} onOpenChange={() => setDeleteProductId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer ce produit ?</AlertDialogTitle>
+            <AlertDialogTitle>Are you sure you want to delete this product ?</AlertDialogTitle>
             <AlertDialogDescription>
-              Cette action est irréversible. Le produit sera définitivement supprimé de la plateforme.
+              This action is irreversible. The product will be permanently deleted from the platform.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteProduct} className="bg-red-500 hover:bg-red-600">
-              Supprimer
+              Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -36,14 +36,14 @@ export default function ImageUpload({
 
       // Vérifier si on a déjà atteint le nombre maximum d'images
       if (images.length + acceptedFiles.length > maxImages) {
-        setUploadError(`Vous ne pouvez pas ajouter plus de ${maxImages} images`)
+        setUploadError(`You cannot add more than ${maxImages} images`)
         return
       }
 
       // Vérifier la taille des fichiers
       const oversizedFiles = acceptedFiles.filter((file) => file.size > maxSize * 1024 * 1024)
       if (oversizedFiles.length > 0) {
-        setUploadError(`Certains fichiers dépassent la taille maximale de ${maxSize} Mo`)
+        setUploadError(`Some files exceed the maximum size of ${maxSize} Mo`)
         return
       }
 
@@ -63,8 +63,8 @@ export default function ImageUpload({
         // Mettre à jour les images
         onChange([...images, ...newImages])
       } catch (error) {
-        console.error("Erreur lors du traitement des images:", error)
-        setUploadError("Une erreur est survenue lors du traitement des images")
+        console.error("Error processing images:", error)
+        setUploadError("An error occurred while processing images")
       } finally {
         setIsUploading(false)
       }
@@ -157,16 +157,16 @@ export default function ImageUpload({
           )}
           <div className="text-sm text-gray-600">
             {isDragActive ? (
-              <p>Déposez les images ici...</p>
+              <p>Drop your images here...</p>
             ) : isUploading ? (
-              <p>Traitement des images...</p>
+              <p>Processing images...</p>
             ) : images.length >= maxImages ? (
-              <p>Nombre maximum d'images atteint ({maxImages})</p>
+              <p>Maximum number of images reached ({maxImages})</p>
             ) : (
               <div>
-                <p className="font-medium">Glissez-déposez vos images ici, ou cliquez pour sélectionner</p>
+                <p className="font-medium">Drop your images here, or click to select</p>
                 <p className="text-xs text-gray-500 mt-1">
-                  JPG, PNG ou WEBP • Max {maxImages} images • {maxSize} Mo max par image
+                  JPG, PNG or WEBP • Max {maxImages} images • {maxSize} Mo max per image
                 </p>
               </div>
             )}
@@ -180,7 +180,7 @@ export default function ImageUpload({
         <div className="space-y-2">
           <div className="flex justify-between items-center">
             <h3 className="text-sm font-medium">
-              Images téléchargées ({images.length}/{maxImages})
+              Uploaded images ({images.length}/{maxImages})
             </h3>
             {images.length > 0 && (
               <Button
@@ -191,7 +191,7 @@ export default function ImageUpload({
                 disabled={isUploading || images.length >= maxImages}
               >
                 <ImageIcon className="h-4 w-4 mr-2" />
-                Ajouter plus
+                Add more
               </Button>
             )}
           </div>
@@ -236,7 +236,7 @@ export default function ImageUpload({
                 </div>
                 {image.isPrimary && (
                   <div className="absolute bottom-0 left-0 right-0 bg-rose-500 text-white text-xs py-1 text-center">
-                    Photo principale
+                    Main image
                   </div>
                 )}
               </div>

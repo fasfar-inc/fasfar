@@ -47,12 +47,12 @@ export default async function CategoriesPage() {
       <div className="container py-6">
         <Link href="/" className="mb-6 flex items-center text-sm font-medium text-gray-500 hover:text-gray-900">
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Retour à l'accueil
+          Back to home
         </Link>
 
         <div className="mb-8">
-          <h1 className="text-3xl font-bold">Catégories</h1>
-          <p className="text-gray-500 mt-2">Parcourez toutes nos catégories pour trouver ce que vous cherchez</p>
+          <h1 className="text-3xl font-bold">Categories</h1>
+          <p className="text-gray-500 mt-2">Browse all our categories to find what you are looking for</p>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

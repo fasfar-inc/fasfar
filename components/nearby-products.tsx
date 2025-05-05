@@ -38,7 +38,7 @@ export function NearbyProducts({ initialProducts }: NearbyProductsProps) {
           })
         },
         (error) => {
-          console.error("Erreur de géolocalisation:", error)
+          console.error("Error getting location:", error)
         },
       )
     }
@@ -75,7 +75,7 @@ export function NearbyProducts({ initialProducts }: NearbyProductsProps) {
         }
       }
     } catch (error) {
-      console.error("Erreur lors de la récupération des produits à proximité:", error)
+      console.error("Error fetching nearby products:", error)
     } finally {
       setIsLoading(false)
     }
@@ -95,14 +95,14 @@ export function NearbyProducts({ initialProducts }: NearbyProductsProps) {
         <div className="flex items-center space-x-2 mb-4">
           <MapPin className="h-5 w-5 text-rose-500" />
           <span className="text-sm text-gray-500">
-            {userLocation ? "Produits près de vous" : "Activez la géolocalisation pour voir les produits à proximité"}
+            {userLocation ? "Products near you" : "Enable geolocation to see products nearby"}
           </span>
         </div>
         <div className="relative mb-6">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
           <Input
             type="search"
-            placeholder="Rechercher des produits..."
+            placeholder="Search for products..."
             className="w-full pl-10 bg-gray-50 border-gray-200"
             value={searchTerm}
             onChange={handleSearch}
@@ -141,14 +141,14 @@ export function NearbyProducts({ initialProducts }: NearbyProductsProps) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium truncate">{product.title}</p>
-                  <p className="text-sm text-gray-500 truncate">À {product.distance} km de vous</p>
+                  <p className="text-sm text-gray-500 truncate">About {product.distance} km from you</p>
                 </div>
                 <div className="font-medium text-rose-500">{product.price.toLocaleString()}€</div>
               </Link>
             ))
           ) : (
             <div className="text-center py-4 text-gray-500">
-              {searchTerm ? "Aucun produit ne correspond à votre recherche" : "Aucun produit à proximité"}
+              {searchTerm ? "No products match your search" : "No products nearby"}
             </div>
           )}
         </div>
