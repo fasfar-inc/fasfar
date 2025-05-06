@@ -5,6 +5,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Loader2, ArrowLeft, ArrowRight, Save, Camera, MapPin, AlertCircle } from "lucide-react"
 import AddressAutocompleteFree from "@/components/address-autocomplete-free"
 import { ImageUploadWithPreview, type UploadedImage } from "@/components/image-upload-with-preview"
-import LocationPickerMap from "@/components/location-picker-map"
+import LocationPickerMap from "@/components/dynamic-location-picker-map"
 import FormSteps from "@/components/form-steps"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { uploadImage } from "@/lib/image-upload-service"
@@ -43,7 +44,7 @@ export default function NewProductPage() {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [apiError, setApiError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [categories, setCategories] = useState<{ slug: string, name: string }[]>([])
+  const [categories, setCategories] = useState<{ id: string, slug: string, name: string }[]>([])
   const [isLoadingCategories, setIsLoadingCategories] = useState(true)
 
   // Rediriger vers la page de connexion si l'utilisateur n'est pas connecté
@@ -59,10 +60,15 @@ export default function NewProductPage() {
       try {
         const res = await fetch("/api/categories")
         const data = await res.json()
-        // If your API returns { products: [...] }
-        const cats = Array.isArray(data) ? data : data.products
+        // Transform the categories to match the expected format
+        const cats = data.map((cat: any) => ({
+          id: cat.id,
+          slug: cat.slug,
+          name: cat.name
+        }))
         setCategories(cats || [])
       } catch (e) {
+        console.error("Error fetching categories:", e)
         setCategories([])
       } finally {
         setIsLoadingCategories(false)
@@ -86,6 +92,7 @@ export default function NewProductPage() {
   }
 
   const handleSelectChange = (name: string, value: string) => {
+    console.log(`Selecting ${name}:`, value) // Debug log
     setFormData((prev) => ({ ...prev, [name]: value }))
 
     // Effacer l'erreur si l'utilisateur corrige le champ
@@ -181,7 +188,10 @@ export default function NewProductPage() {
       if (!formData.price || isNaN(Number(formData.price)) || Number(formData.price) <= 0) {
         newErrors.price = "Please enter a valid price"
       }
-      if (!formData.category) newErrors.category = "The category is required"
+      if (!formData.category) {
+        console.log("Category validation failed:", formData.category) // Debug log
+        newErrors.category = "The category is required"
+      }
       if (!formData.condition) newErrors.condition = "The product condition is required"
     } else if (currentStep === 1) {
       if (images.length === 0) newErrors.images = "Add at least one image"
@@ -250,12 +260,18 @@ export default function NewProductPage() {
         setIsUploading(false)
       }
 
+      // Find the selected category
+      const selectedCategory = categories.find(cat => cat.slug === formData.category)
+      if (!selectedCategory) {
+        throw new Error("Invalid category selected")
+      }
+
       // Préparer les données du produit
       const productData = {
         title: formData.title,
         description: formData.description,
         price: Number.parseFloat(formData.price),
-        category: formData.category,
+        categoryId: selectedCategory.id,
         condition: formData.condition,
         location: formData.location,
         latitude: formData.latitude,
@@ -374,21 +390,8 @@ export default function NewProductPage() {
                   <h4 className="text-sm font-medium text-gray-500">Category</h4>
                   <p className="mt-1">
                     {formData.category
-                      ? {
-                          REAL_ESTATE: "Real Estate",
-                          VEHICLES: "Vehicles",
-                          ELECTRONICS: "Electronics",
-                          HOME_GARDEN: "House & Garden",
-                          CLOTHING: "Clothing & Accessories",
-                          SPORTS_LEISURE: "Sports & Leisure",
-                          TOYS_GAMES: "Toys & Games",
-                          BOOKS_MOVIES_MUSIC: "Books, Films & Music",
-                          PETS: "Animals",
-                          SERVICES: "Services",
-                          JOBS: "Jobs",
-                          OTHER: "Other",
-                        }[formData.category]
-                      : "Non définie"}
+                      ? categories.find(cat => cat.slug === formData.category)?.name || "Not defined"
+                      : "Not defined"}
                   </p>
                 </div>
 
@@ -452,13 +455,7 @@ export default function NewProductPage() {
 
         {/* Avertissement et confirmation */}
         <div className="border-t pt-6">
-          <Alert className="mb-4">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              Please carefully check all the information before publishing your ad. Once published,
-              you can always modify it from your profile.
-            </AlertDescription>
-          </Alert>
+
 
           <div className="flex justify-center">
             <Button
@@ -486,13 +483,21 @@ export default function NewProductPage() {
   }
 
   return (
-    <div className="container py-8">
-      <h1 className="text-3xl font-bold mb-2">Sell an article</h1>
-      <p className="text-muted-foreground mb-6">Create an attractive ad to sell your product quickly</p>
+    <div className="container py-8 ">
+      <div className="flex items-center gap-2">
+        <Link href="/" className="mb-6 flex items-center text-sm font-medium text-gray-500 hover:text-gray-900">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to home
+        </Link>
+      </div>
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-3xl font-bold mb-2 text-left">Sell an article</h1>
+        <p className="text-muted-foreground mb-6 text-left">Create an attractive ad to sell your product quickly</p>
+      </div>
 
       <FormSteps steps={STEPS} currentStep={currentStep} onStepClick={(step) => setCurrentStep(step)} />
 
-      <Card className="mt-6">
+      <Card className="mt-6 max-w-4xl mx-auto">
         <CardHeader>
           <CardTitle>{STEPS[currentStep]}</CardTitle>
           <CardDescription>
@@ -569,7 +574,7 @@ export default function NewProductPage() {
                           <div className="px-3 py-2 text-sm text-gray-500">No category</div>
                         ) : (
                           categories.map((cat) => (
-                            <SelectItem key={cat.slug} value={cat.slug}>
+                            <SelectItem key={cat.id} value={cat.slug}>
                               {cat.name}
                             </SelectItem>
                           ))

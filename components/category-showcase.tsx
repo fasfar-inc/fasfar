@@ -125,7 +125,7 @@ export function CategoryShowcase() {
                 </div>
                 <h3 className="mt-3 font-medium">{category.name}</h3>
                 <p className="mt-1 text-xs text-gray-500">
-                  {category.description || `Explore all ${category.name.toLowerCase()} products`}
+                  {category.description || `Explore all ${category.name.toLowerCase()} products`} 
                 </p>
               </Link>
             )

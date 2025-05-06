@@ -4,7 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter, useSearchParams } from "next/navigation"
-import { Star } from "lucide-react"
+import { ArrowLeft, Star } from "lucide-react"
 
 import { ProductFilters, type FilterValues } from "@/components/product-filters"
 import { useGeolocation } from "@/hooks/use-geolocation"
@@ -164,9 +164,11 @@ export default function MarketplaceClient({ products, pagination, filters }: Mar
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Header />
       <div className="container py-6">
-        
+        <Link href="/" className="mb-6 flex items-center text-sm font-medium text-gray-500 hover:text-gray-900">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to home
+        </Link>
         {/* En-tête avec titre */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold">Marketplace</h1>
