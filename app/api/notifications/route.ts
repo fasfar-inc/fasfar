@@ -59,9 +59,8 @@ export async function GET(request: NextRequest) {
         isRead: false,
       },
     })
-
     // Formater les notifications
-    const formattedNotifications = notifications.map((notification) => ({
+    const formattedNotifications = notifications.map((notification: any) => ({
       ...notification,
       relatedProduct: notification.relatedProduct
         ? {
