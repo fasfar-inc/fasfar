@@ -92,7 +92,6 @@ export default function NewProductPage() {
   }
 
   const handleSelectChange = (name: string, value: string) => {
-    console.log(`Selecting ${name}:`, value) // Debug log
     setFormData((prev) => ({ ...prev, [name]: value }))
 
     // Effacer l'erreur si l'utilisateur corrige le champ
@@ -189,7 +188,6 @@ export default function NewProductPage() {
         newErrors.price = "Please enter a valid price"
       }
       if (!formData.category) {
-        console.log("Category validation failed:", formData.category) // Debug log
         newErrors.category = "The category is required"
       }
       if (!formData.condition) newErrors.condition = "The product condition is required"
@@ -282,7 +280,6 @@ export default function NewProductPage() {
         })),
       }
 
-      console.log("Product data to send:", productData)
 
       // Envoyer les données à l'API
       const response = await fetch("/api/products", {

@@ -1,14 +1,15 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter, useSearchParams } from "next/navigation"
-import { ArrowLeft, Star } from "lucide-react"
+import { ArrowLeft, Star, Heart } from "lucide-react"
+import { useSession } from "next-auth/react"
+import { useToast } from "@/components/ui/use-toast"
 
 import { ProductFilters, type FilterValues } from "@/components/product-filters"
 import { useGeolocation } from "@/hooks/use-geolocation"
-import { Header } from "@/components/header"
 
 interface MarketplaceClientProps {
   products: any[]
@@ -36,8 +37,12 @@ export default function MarketplaceClient({ products, pagination, filters }: Mar
   const router = useRouter()
   const searchParams = useSearchParams()
   const { latitude, longitude, loading, error, getPosition } = useGeolocation()
+  const { data: session } = useSession()
+  const { toast } = useToast()
   const [showExpandedFilters, setShowExpandedFilters] = useState(false)
   const [currentPage, setCurrentPage] = useState(pagination.page)
+  const [favoriteStates, setFavoriteStates] = useState<Record<string, boolean>>({})
+  const [favoriteLoading, setFavoriteLoading] = useState<Record<string, boolean>>({})
 
   // Initialiser les filtres avec les valeurs actuelles
   const initialFilters: FilterValues = {
@@ -90,7 +95,7 @@ export default function MarketplaceClient({ products, pagination, filters }: Mar
     }
 
     // Gérer la distance
-    if (newFilters.distance !== 1000) {
+    if (newFilters.distance && newFilters.distance !== 1000) {
       params.set("distance", newFilters.distance.toString())
     } else {
       params.delete("distance")
@@ -160,6 +165,68 @@ export default function MarketplaceClient({ products, pagination, filters }: Mar
     }
 
     paginationItems.push(pagination.pages)
+  }
+
+  // Check favorite status for all products on mount
+  useEffect(() => {
+    const checkFavoriteStatuses = async () => {
+      if (!session) return
+      const newFavoriteStates: Record<string, boolean> = {}
+      const newFavoriteLoading: Record<string, boolean> = {}
+      
+      for (const product of products) {
+        try {
+          const response = await fetch(`/api/products/${product.id}/favorite`)
+          if (response.ok) {
+            const data = await response.json()
+            newFavoriteStates[product.id] = data.isFavorited
+          }
+        } catch {}
+        newFavoriteLoading[product.id] = false
+      }
+      
+      setFavoriteStates(newFavoriteStates)
+      setFavoriteLoading(newFavoriteLoading)
+    }
+    checkFavoriteStatuses()
+  }, [products, session])
+
+  const toggleFavorite = async (productId: string, e: React.MouseEvent) => {
+    e.preventDefault()
+    if (!session) {
+      router.push(`/login?callbackUrl=/marketplace`)
+      return
+    }
+
+    setFavoriteLoading(prev => ({ ...prev, [productId]: true }))
+    try {
+      const isCurrentlyFavorite = favoriteStates[productId]
+      const response = await fetch(`/api/products/${productId}/favorite`, {
+        method: isCurrentlyFavorite ? "DELETE" : "POST"
+      })
+      
+      if (!response.ok) throw new Error()
+      
+      setFavoriteStates(prev => ({
+        ...prev,
+        [productId]: !isCurrentlyFavorite
+      }))
+      
+      toast({
+        title: !isCurrentlyFavorite ? "Added to favorites" : "Removed from favorites",
+        description: !isCurrentlyFavorite
+          ? "This product has been added to your favorites."
+          : "This product has been removed from your favorites.",
+      })
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An error occurred while updating favorites.",
+        variant: "destructive",
+      })
+    } finally {
+      setFavoriteLoading(prev => ({ ...prev, [productId]: false }))
+    }
   }
 
   return (
@@ -237,9 +304,9 @@ export default function MarketplaceClient({ products, pagination, filters }: Mar
                     <Link
                       key={product.id}
                       href={`/product/${product.id}`}
-                      className="group overflow-hidden rounded-lg border bg-white shadow-sm transition-all hover:shadow-md"
+                      className="group overflow-hidden rounded-lg border bg-white shadow-sm transition-all hover:shadow-md relative"
                     >
-                      <div className="aspect-square overflow-hidden">
+                      <div className="aspect-square overflow-hidden relative">
                         <Image
                           src={product.primaryImage || "/placeholder.svg?height=300&width=300&query=product"}
                           alt={product.title}
@@ -247,6 +314,24 @@ export default function MarketplaceClient({ products, pagination, filters }: Mar
                           height={300}
                           className="h-full w-full object-cover transition-transform group-hover:scale-105"
                         />
+                        {/* Favorite button */}
+                        <button
+                          className={`absolute top-3 right-3 z-10 p-2 rounded-full bg-white/90 hover:bg-white shadow border border-gray-200 transition
+                            ${favoriteStates[product.id] ? "text-rose-500" : "text-gray-400"} hover:scale-110`}
+                          onClick={(e) => toggleFavorite(product.id, e)}
+                          disabled={favoriteLoading[product.id]}
+                          aria-label={favoriteStates[product.id] ? "Remove from favorites" : "Add to favorites"}
+                          style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
+                        >
+                          {favoriteLoading[product.id] ? (
+                            <svg className="animate-spin h-5 w-5 text-rose-500" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                            </svg>
+                          ) : (
+                            <Heart className={`h-5 w-5 ${favoriteStates[product.id] ? "fill-rose-500" : ""}`} />
+                          )}
+                        </button>
                       </div>
                       <div className="p-4">
                         <h3 className="font-medium line-clamp-1">{product.title}</h3>

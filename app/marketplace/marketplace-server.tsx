@@ -22,21 +22,26 @@ export interface MarketplaceServerProps {
   }
 }
 
-export default async function MarketplaceServer({ searchParams }: MarketplaceServerProps) {
+export default async function MarketplaceServer({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | string[] | undefined }
+}) {
   // Extraire les paramètres de filtrage
+  const params = await Promise.resolve(searchParams)
   const filters = {
-    category: searchParams.category,
-    minPrice: searchParams.minPrice ? Number.parseFloat(searchParams.minPrice) : undefined,
-    maxPrice: searchParams.maxPrice ? Number.parseFloat(searchParams.maxPrice) : undefined,
-    condition: searchParams.condition as ProductCondition | undefined,
-    location: searchParams.location || undefined,
-    distance: searchParams.distance ? Number.parseFloat(searchParams.distance) : 50, // Changé de 100 à 50
-    latitude: searchParams.latitude ? Number.parseFloat(searchParams.latitude) : undefined,
-    longitude: searchParams.longitude ? Number.parseFloat(searchParams.longitude) : undefined,
-    search: searchParams.search || undefined,
-    sortBy: searchParams.sortBy || "date_desc",
-    page: searchParams.page ? Number.parseInt(searchParams.page) : 1,
-    limit: searchParams.limit ? Number.parseInt(searchParams.limit) : 12,
+    category: typeof params.category === 'string' ? params.category : undefined,
+    minPrice: typeof params.minPrice === 'string' ? Number.parseFloat(params.minPrice) : undefined,
+    maxPrice: typeof params.maxPrice === 'string' ? Number.parseFloat(params.maxPrice) : undefined,
+    condition: typeof params.condition === 'string' ? params.condition as ProductCondition : undefined,
+    location: typeof params.location === 'string' ? params.location : undefined,
+    distance: typeof params.distance === 'string' ? Number.parseFloat(params.distance) : undefined,
+    latitude: typeof params.latitude === 'string' ? Number.parseFloat(params.latitude) : undefined,
+    longitude: typeof params.longitude === 'string' ? Number.parseFloat(params.longitude) : undefined,
+    search: typeof params.search === 'string' ? params.search : undefined,
+    sortBy: typeof params.sortBy === 'string' ? params.sortBy : "date_desc",
+    page: typeof params.page === 'string' ? Number.parseInt(params.page) : 1,
+    limit: typeof params.limit === 'string' ? Number.parseInt(params.limit) : 12,
   }
 
   // Construire la requête avec les filtres
@@ -180,7 +185,7 @@ export default async function MarketplaceServer({ searchParams }: MarketplaceSer
   // Filtrer par distance si nécessaire
   if (filters.distance && filters.latitude && filters.longitude) {
     sortedProducts = sortedProducts.filter(
-      (product) => product.distance !== undefined && product.distance <= filters.distance,
+      (product) => product.distance !== undefined && product.distance <= filters.distance!,
     )
   }
 

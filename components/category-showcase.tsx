@@ -26,7 +26,6 @@ export function CategoryShowcase() {
         setIsLoading(true)
         const response = await fetch("/api/categories")
         const data = await response.json()
-        console.log("Categories API response:", data)
         if (Array.isArray(data)) {
           setCategories(data.slice(0, 5))
         } else if (Array.isArray(data.products)) {

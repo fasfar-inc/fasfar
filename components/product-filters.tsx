@@ -73,7 +73,7 @@ export function ProductFilters({
   const [selectedCondition, setSelectedCondition] = useState(initialValues.condition)
   const [minPrice, setMinPrice] = useState(initialValues.minPrice)
   const [maxPrice, setMaxPrice] = useState(initialValues.maxPrice)
-  const [distance, setDistance] = useState(initialValues.distance || 50)
+  const [distance, setDistance] = useState(initialValues.distance || 1000)
   const [sortBy, setSortBy] = useState(initialValues.sortBy)
 
   // Calculer le nombre de filtres actifs
@@ -112,9 +112,19 @@ export function ProductFilters({
     setSelectedCondition(initialValues.condition)
     setMinPrice(initialValues.minPrice)
     setMaxPrice(initialValues.maxPrice)
-    setDistance(initialValues.distance)
+    setDistance(initialValues.distance || 1000)
     setSortBy(initialValues.sortBy)
   }, [initialValues])
+
+  // Appliquer le filtre de distance par défaut au montage du composant
+  useEffect(() => {
+    if (hasGeolocation) {
+      onFilterChange({
+        ...initialValues,
+        distance: 1000
+      })
+    }
+  }, [hasGeolocation]) // Only run when geolocation status changes
 
   // Réinitialiser tous les filtres
   const resetFilters = () => {
@@ -292,8 +302,8 @@ export function ProductFilters({
             </SheetContent>
           </Sheet>
 
-          <Select value={sortBy} onValueChange={setSortBy} className="hidden md:flex">
-            <SelectTrigger className="w-[180px]">
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="w-[180px] hidden md:flex">
               <SelectValue placeholder="Trier par" />
             </SelectTrigger>
             <SelectContent>

@@ -21,6 +21,7 @@ import {
   Move,
   Edit,
   Trash2,
+  MessageCircle,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -154,9 +155,13 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
 
   const [mainImage, setMainImage] = useState<string | null>(product.primaryImage || product.images[0]?.imageUrl || null)
   const [isFavorite, setIsFavorite] = useState(false)
+  const [favoriteLoading, setFavoriteLoading] = useState(false)
+  const [favoriteError, setFavoriteError] = useState<string | null>(null)
+  const [favoritesCount, setFavoritesCount] = useState(product.favoritesCount || 0)
   const [zoomedImage, setZoomedImage] = useState<string | null>(null)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState("description")
 
   // États pour le zoom
   const [zoomLevel, setZoomLevel] = useState(1)
@@ -179,11 +184,10 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
     return null
   }, [latitude, longitude, product.latitude, product.longitude])
 
-  // Vérifier si le produit est dans les favoris de l'utilisateur
+  // Check if product is favorited on mount
   useEffect(() => {
     const checkFavoriteStatus = async () => {
       if (!session) return
-
       try {
         const response = await fetch(`/api/products/${product.id}/favorite`)
         if (response.ok) {
@@ -191,119 +195,50 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
           setIsFavorite(data.isFavorited)
         }
       } catch (error) {
-        console.error("Error checking favorites:", error)
+        setFavoriteError("Failed to check favorite status.")
       }
     }
-
     checkFavoriteStatus()
   }, [product.id, session])
 
-  // Ajouter un style pour l'effet d'onde
-  if (typeof document !== "undefined") {
-    const style = document.createElement("style")
-    style.innerHTML = `
-    .ripple {
-      position: absolute;
-      border-radius: 50%;
-      transform: scale(0);
-      animation: ripple 0.6s linear;
-      background-color: rgba(255, 255, 255, 0.3);
+  // Toggle favorite
+  const toggleFavorite = async () => {
+    if (!session) {
+      toast({
+        title: "Connection required",
+        description: "Please connect to add products to your favorites.",
+        variant: "destructive",
+      })
+      return
     }
-
-    @keyframes ripple {
-      to {
-        transform: scale(4);
-        opacity: 0;
+    setFavoriteLoading(true)
+    setFavoriteError(null)
+    try {
+      let response
+      if (!isFavorite) {
+        response = await fetch(`/api/products/${product.id}/favorite`, { method: "POST" })
+      } else {
+        response = await fetch(`/api/products/${product.id}/favorite`, { method: "DELETE" })
       }
+      if (!response.ok) throw new Error("Failed to update favorite.")
+      setIsFavorite(!isFavorite)
+      setFavoritesCount((count) => count + (!isFavorite ? 1 : -1))
+      toast({
+        title: !isFavorite ? "Added to favorites" : "Removed from favorites",
+        description: !isFavorite
+          ? "This product has been added to your favorites."
+          : "This product has been removed from your favorites.",
+      })
+    } catch (error) {
+      setFavoriteError("Failed to update favorite.")
+      toast({
+        title: "Error",
+        description: "An error occurred while updating favorites.",
+        variant: "destructive",
+      })
+    } finally {
+      setFavoriteLoading(false)
     }
-    
-    .zoomed-image {
-      transition: transform 0.2s ease-out;
-      cursor: grab;
-    }
-    
-    .zoomed-image.dragging {
-      cursor: grabbing;
-      transition: none;
-    }
-    
-    .zoom-controls {
-      transition: opacity 0.3s ease;
-    }
-    
-    @keyframes heartBounce {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.3); }
-    }
-    .heart-bounce {
-      animation: heartBounce 0.5s ease;
-    }
-    
-    /* Style personnalisé pour les onglets */
-    .custom-tabs {
-      background-color: #f3f4f6;
-      padding: 8px;
-      border-radius: 24px;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .custom-tab {
-      border-radius: 18px !important;
-      font-weight: 500;
-      transition: all 0.3s ease;
-      position: relative;
-      padding: 16px 0 !important;
-      font-size: 16px;
-      z-index: 2;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 56px;
-    }
-    
-    .custom-tab[data-state="active"] {
-      color: #e11d48;
-      background-color: transparent;
-    }
-    
-    .custom-tab:hover:not([data-state="active"]) {
-      background-color: rgba(255, 255, 255, 0.5);
-    }
-    
-    /* Indicateur qui glisse */
-    .custom-tabs::after {
-      content: '';
-      position: absolute;
-      top: 8px;
-      left: 8px;
-      width: calc(33.33% - 5.33px);
-      height: calc(100% - 16px);
-      background-color: white;
-      border-radius: 18px;
-      transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-      z-index: 1;
-    }
-    
-    .custom-tabs[data-state="details"]::after {
-      transform: translateX(100%);
-    }
-    
-    .custom-tabs[data-state="shipping"]::after {
-      transform: translateX(200%);
-    }
-    
-    .custom-tab-content {
-      border-radius: 18px;
-      background-color: white;
-      margin-top: 20px;
-      padding: 24px;
-      border: 1px solid #f3f4f6;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
-    }
-  `
-    document.head.appendChild(style)
   }
 
   // Fonction pour naviguer entre les images en mode plein écran
@@ -387,76 +322,6 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
       } else {
         handleZoomOut()
       }
-    }
-  }
-
-  // Fonction pour basculer l'état favori
-  const toggleFavorite = async () => {
-    if (!session) {
-      toast({
-        title: "Connection required",
-        description: "Please connect to add products to your favorites.",
-        variant: "destructive",
-      })
-      return
-    }
-
-    try {
-      const response = await fetch(`/api/products/${product.id}/favorite`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ isFavorited: !isFavorite }),
-      })
-
-      if (!response.ok) {
-        throw new Error("Error updating favorites")
-      }
-
-      setIsFavorite(!isFavorite)
-
-      toast({
-        title: isFavorite ? "Removed from favorites" : "Added to favorites",
-        description: isFavorite ? "This product has been removed from your favorites." : "This product has been added to your favorites.",
-      })
-    } catch (error) {
-      console.error("Error updating favorites:", error)
-      toast({
-        title: "Error",
-        description: "An error occurred while updating favorites.",
-        variant: "destructive",
-      })
-    }
-  }
-
-  // Fonction pour supprimer le produit
-  const deleteProduct = async () => {
-    if (!session || !isOwner) return
-
-    try {
-      const response = await fetch(`/api/products/${product.id}`, {
-        method: "DELETE",
-      })
-
-      if (!response.ok) {
-        throw new Error("Error deleting the product")
-      }
-
-      toast({
-        title: "Product deleted",
-        description: "Your product has been deleted successfully.",
-      })
-
-      // Rediriger vers la page de profil
-      router.push("/profile")
-    } catch (error) {
-      console.error("Error deleting the product:", error)
-      toast({
-        title: "Error",
-        description: "An error occurred while deleting the product.",
-        variant: "destructive",
-      })
     }
   }
 
@@ -613,7 +478,7 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
         <div className="grid gap-6 lg:grid-cols-2 lg:gap-12">
           <div className="space-y-4">
             <div
-              className="overflow-hidden rounded-lg bg-white cursor-zoom-in"
+              className="overflow-hidden rounded-lg bg-white cursor-zoom-in aspect-[1/1] w-full flex items-center justify-center"
               onClick={() => setZoomedImage(mainImage)}
             >
               <Image
@@ -621,7 +486,7 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
                 alt={product.title}
                 width={600}
                 height={600}
-                className="h-full w-full object-cover"
+                className="h-full w-full object-contain"
               />
             </div>
             <div className="flex space-x-2 overflow-x-auto pb-2">
@@ -633,54 +498,63 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
                     mainImage === image.imageUrl
                       ? "border-2 border-rose-500 h-24 w-24"
                       : "border border-gray-200 h-20 w-20"
-                  }`}
+                  } aspect-[1/1] flex items-center justify-center bg-white`}
                 >
                   <Image
                     src={image.imageUrl || "/placeholder.svg?height=96&width=96"}
                     alt={`${product.title} - Image ${index + 1}`}
                     width={96}
                     height={96}
-                    className="h-full w-full object-cover"
+                    className="h-full w-full object-contain"
                   />
                 </button>
               ))}
             </div>
           </div>
           <div className="space-y-6">
-            <div>
-              <div className="flex items-center justify-between">
-                <Badge variant="outline" className="mb-2">
+            <div className="mb-2 flex items-center gap-2">
+              <Link href={`/marketplace?category=${encodeURIComponent(product.category)}`}>
+                <Badge variant="outline" className="mb-2 bg-rose-50 text-rose-600 border-rose-200 px-4 py-2 text-base font-semibold hover:bg-rose-100 cursor-pointer transition">
                   {formatCategory(product.category)}
                 </Badge>
-                <div className="flex items-center space-x-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={(e) => {
-                      e.preventDefault()
-                      toggleFavorite()
-
-                      // Effet de surprise: faire rebondir le cœur
-                      const heart = e.currentTarget.querySelector("svg")
-                      if (heart) {
-                        heart.classList.add("heart-bounce")
-                        setTimeout(() => heart.classList.remove("heart-bounce"), 500)
-                      }
-                    }}
-                    className={isFavorite ? "text-rose-500" : ""}
-                  >
-                    <Heart className={`h-5 w-5 ${isFavorite ? "fill-rose-500" : ""}`} />
-                    <span className="sr-only">Add to favorites</span>
-                  </Button>
-                  <Button variant="ghost" size="icon">
-                    <Share2 className="h-5 w-5" />
-                    <span className="sr-only">Share</span>
-                  </Button>
-                </div>
-              </div>
+              </Link>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={async (e) => {
+                  e.preventDefault()
+                  if (!session) {
+                    router.push(`/login?callbackUrl=/product/${product.id}`)
+                    return
+                  }
+                  await toggleFavorite()
+                  // Only add animation if we're not in loading state
+                  if (!favoriteLoading) {
+                    const heart = e.currentTarget.querySelector("svg")
+                    if (heart) {
+                      heart.classList.add("heart-bounce")
+                      setTimeout(() => heart.classList.remove("heart-bounce"), 500)
+                    }
+                  }
+                }}
+                className={isFavorite ? "text-rose-500" : ""}
+                disabled={favoriteLoading}
+                aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+              >
+                {favoriteLoading ? (
+                  <svg className="animate-spin h-5 w-5 text-rose-500" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                  </svg>
+                ) : (
+                  <Heart className={`h-5 w-5 ${isFavorite ? "fill-rose-500" : ""}`} />
+                )}
+              </Button>
+            </div>
+            <div>
               <h1 className="text-2xl font-bold md:text-3xl">{product.title}</h1>
               <p className="mt-2 text-3xl font-bold text-rose-500">{product.price.toLocaleString()}€</p>
-              <div className="mt-2 flex items-center text-sm text-gray-500">
+              <div className="mt-2 flex items-center text-sm text-gray-500 flex-wrap gap-2">
                 <MapPin className="mr-1 h-4 w-4" />
                 <span>{product.location}</span>
                 {product.latitude && product.longitude && (
@@ -750,8 +624,8 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
                 </div>
                 {!isOwner && (
                   <Button
-                    variant="outline"
-                    className="w-full md:w-auto"
+                    variant="default"
+                    className="w-full md:w-auto bg-rose-500 hover:bg-rose-600 text-white font-semibold flex items-center gap-2 shadow-md"
                     onClick={() => {
                       if (!session?.user) {
                         router.push(`/login?callbackUrl=/product/${product.id}`)
@@ -760,7 +634,8 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
                       router.push(`/messages/${product.seller.id}?productId=${product.id}`)
                     }}
                   >
-                    Contact
+                    <MessageCircle className="h-5 w-5 mr-1" />
+                    Contact Seller
                   </Button>
                 )}
               </div>
@@ -780,27 +655,31 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
 
             <Tabs
               defaultValue="description"
-              onValueChange={(value) => {
-                // Mettre à jour l'état de l'indicateur
-                const tabsList = document.querySelector(".custom-tabs")
-                if (tabsList) {
-                  tabsList.setAttribute("data-state", value)
-                }
-              }}
+              value={activeTab}
+              onValueChange={setActiveTab}
             >
-              <TabsList className="grid w-full grid-cols-3 custom-tabs" data-state="description">
-                <TabsTrigger value="description" className="custom-tab">
-                  Description
-                </TabsTrigger>
-                <TabsTrigger value="details" className="custom-tab">
-                  Details
-                </TabsTrigger>
-                <TabsTrigger value="shipping" className="custom-tab">
-                  Shipping
-                </TabsTrigger>
-              </TabsList>
+              <div className="relative">
+                <TabsList className="flex w-full bg-gray-100 rounded-2xl p-1 mb-2 shadow-sm">
+                  <TabsTrigger value="description" className="flex-1 py-3 font-semibold text-base rounded-2xl data-[state=active]:bg-white data-[state=active]:text-rose-500 data-[state=active]:shadow-md transition-all">
+                    Description
+                  </TabsTrigger>
+                  <TabsTrigger value="details" className="flex-1 py-3 font-semibold text-base rounded-2xl data-[state=active]:bg-white data-[state=active]:text-rose-500 data-[state=active]:shadow-md transition-all">
+                    Details
+                  </TabsTrigger>
+                  <TabsTrigger value="shipping" className="flex-1 py-3 font-semibold text-base rounded-2xl data-[state=active]:bg-white data-[state=active]:text-rose-500 data-[state=active]:shadow-md transition-all">
+                    Shipping
+                  </TabsTrigger>
+                </TabsList>
+                <span
+                  className="absolute bottom-0 left-0 h-1 bg-rose-500 rounded-full transition-all duration-300"
+                  style={{
+                    width: '33.33%',
+                    transform: `translateX(${['description','details','shipping'].indexOf(activeTab) * 100}%)`
+                  }}
+                ></span>
+              </div>
               <TabsContent value="description" className="mt-4 space-y-4 custom-tab-content">
-                <p className="text-gray-700">{product.description}</p>
+                <p className="text-gray-700 whitespace-pre-line">{product.description}</p>
               </TabsContent>
               <TabsContent value="details" className="mt-4 custom-tab-content">
                 <dl className="grid grid-cols-2 gap-4">
@@ -833,7 +712,9 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={deleteProduct} className="bg-red-500 hover:bg-red-600">
+            <AlertDialogAction onClick={() => {
+              // Implement delete logic here
+            }} className="bg-red-500 hover:bg-red-600">
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

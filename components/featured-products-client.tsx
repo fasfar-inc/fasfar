@@ -2,10 +2,13 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { ArrowRight, MapPin } from "lucide-react"
+import { ArrowRight, MapPin, Heart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useState, useEffect } from "react"
 import { calculateDistance } from "@/lib/utils"
+import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
+import { useToast } from "@/components/ui/use-toast"
 
 interface Product {
   id: number
@@ -26,6 +29,11 @@ interface FeaturedProductsProps {
 export function FeaturedProductsClient({ products }: FeaturedProductsProps) {
   const [mounted, setMounted] = useState(false)
   const [productsWithDistance, setProductsWithDistance] = useState<Product[]>(products)
+  const { data: session } = useSession()
+  const router = useRouter()
+  const { toast } = useToast()
+  const [favoriteStates, setFavoriteStates] = useState<Record<string, boolean>>({})
+  const [favoriteLoading, setFavoriteLoading] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
     setMounted(true)
@@ -52,6 +60,68 @@ export function FeaturedProductsClient({ products }: FeaturedProductsProps) {
       setProductsWithDistance(updatedProducts)
     }
   }, [products])
+
+  // Check favorite status for all products on mount
+  useEffect(() => {
+    const checkFavoriteStatuses = async () => {
+      if (!session) return
+      const newFavoriteStates: Record<string, boolean> = {}
+      const newFavoriteLoading: Record<string, boolean> = {}
+      
+      for (const product of products) {
+        try {
+          const response = await fetch(`/api/products/${product.id}/favorite`)
+          if (response.ok) {
+            const data = await response.json()
+            newFavoriteStates[product.id] = data.isFavorited
+          }
+        } catch {}
+        newFavoriteLoading[product.id] = false
+      }
+      
+      setFavoriteStates(newFavoriteStates)
+      setFavoriteLoading(newFavoriteLoading)
+    }
+    checkFavoriteStatuses()
+  }, [products, session])
+
+  const toggleFavorite = async (productId: number, e: React.MouseEvent) => {
+    e.preventDefault()
+    if (!session) {
+      router.push(`/login?callbackUrl=/`)
+      return
+    }
+
+    setFavoriteLoading(prev => ({ ...prev, [productId]: true }))
+    try {
+      const isCurrentlyFavorite = favoriteStates[productId]
+      const response = await fetch(`/api/products/${productId}/favorite`, {
+        method: isCurrentlyFavorite ? "DELETE" : "POST"
+      })
+      
+      if (!response.ok) throw new Error()
+      
+      setFavoriteStates(prev => ({
+        ...prev,
+        [productId]: !isCurrentlyFavorite
+      }))
+      
+      toast({
+        title: !isCurrentlyFavorite ? "Added to favorites" : "Removed from favorites",
+        description: !isCurrentlyFavorite
+          ? "This product has been added to your favorites."
+          : "This product has been removed from your favorites.",
+      })
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An error occurred while updating favorites.",
+        variant: "destructive",
+      })
+    } finally {
+      setFavoriteLoading(prev => ({ ...prev, [productId]: false }))
+    }
+  }
 
   // Ajouter un style pour l'effet de badge
   useEffect(() => {
@@ -96,7 +166,7 @@ export function FeaturedProductsClient({ products }: FeaturedProductsProps) {
             <Link
               key={product.id}
               href={`/product/${product.id}`}
-              className="group overflow-hidden rounded-xl border bg-white shadow-sm transition-all hover:shadow-md featured-product"
+              className="group overflow-hidden rounded-xl border bg-white shadow-sm transition-all hover:shadow-md featured-product relative"
               onMouseEnter={(e) => {
                 // Effet de surprise: faire apparaître un badge "Populaire"
                 if (product.favoritesCount && product.favoritesCount > 0) {
@@ -129,7 +199,7 @@ export function FeaturedProductsClient({ products }: FeaturedProductsProps) {
                 }
               }}
             >
-              <div className="aspect-square overflow-hidden">
+              <div className="aspect-square overflow-hidden relative">
                 <Image
                   src={product.image || "/placeholder.svg"}
                   alt={product.title}
@@ -137,6 +207,24 @@ export function FeaturedProductsClient({ products }: FeaturedProductsProps) {
                   height={400}
                   className="h-full w-full object-cover transition-transform group-hover:scale-105"
                 />
+                {/* Favorite button */}
+                <button
+                  className={`absolute top-3 left-3 z-10 p-2 rounded-full bg-white/90 hover:bg-white shadow border border-gray-200 transition
+                    ${favoriteStates[product.id] ? "text-rose-500" : "text-gray-400"} hover:scale-110`}
+                  onClick={(e) => toggleFavorite(product.id, e)}
+                  disabled={favoriteLoading[product.id]}
+                  aria-label={favoriteStates[product.id] ? "Remove from favorites" : "Add to favorites"}
+                  style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
+                >
+                  {favoriteLoading[product.id] ? (
+                    <svg className="animate-spin h-5 w-5 text-rose-500" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                    </svg>
+                  ) : (
+                    <Heart className={`h-5 w-5 ${favoriteStates[product.id] ? "fill-rose-500" : ""}`} />
+                  )}
+                </button>
               </div>
               <div className="p-4">
                 <h3 className="font-medium line-clamp-1">{product.title}</h3>

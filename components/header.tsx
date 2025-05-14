@@ -15,7 +15,8 @@ import {
   PlusCircle, 
   Search,
   X,
-  Menu
+  Menu,
+  Bell
 } from "lucide-react"
 import { useSession, signOut } from "next-auth/react"
 import { Button } from "@/components/ui/button"
@@ -149,6 +150,160 @@ function UserDropdown({ user }: { user?: { name?: string | null; image?: string 
   )
 }
 
+// Notification Dropdown Component
+function NotificationDropdown() {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  const { data: session } = useSession()
+  const [notifications, setNotifications] = useState<{
+    unreadCount: number;
+    messages: Array<{
+      id: number;
+      content: string;
+      createdAt: string;
+      sender: {
+        id: number;
+        name: string | null;
+        image: string | null;
+      };
+      product: {
+        id: number;
+        title: string;
+        primaryImage: string | null;
+      } | null;
+    }>;
+  }>({ unreadCount: 0, messages: [] })
+
+  useEffect(() => {
+    if (open && session?.user) {
+      fetchNotifications()
+    }
+  }, [open, session])
+
+  const fetchNotifications = async () => {
+    try {
+      const response = await fetch('/api/messages/notifications')
+      if (response.ok) {
+        const data = await response.json()
+        setNotifications(data)
+      }
+    } catch (error) {
+      console.error('Failed to fetch notifications:', error)
+    }
+  }
+
+  const markAsRead = async (messageIds: number[]) => {
+    try {
+      const response = await fetch('/api/messages/notifications', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ messageIds }),
+      })
+      if (response.ok) {
+        fetchNotifications()
+      }
+    } catch (error) {
+      console.error('Failed to mark messages as read:', error)
+    }
+  }
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && e.target instanceof Node && !ref.current.contains(e.target)) {
+        setOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClick)
+    return () => document.removeEventListener("mousedown", handleClick)
+  }, [])
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        className="relative p-2 rounded-full hover:bg-gray-100 transition-all duration-200"
+        onClick={() => setOpen(v => !v)}
+        aria-haspopup="true"
+        aria-expanded={open}
+      >
+        <Bell className="w-5 h-5 text-gray-700" />
+        {notifications.unreadCount > 0 && (
+          <span className="absolute top-0 right-0 w-2 h-2 bg-rose-500 rounded-full"></span>
+        )}
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ duration: 0.2 }}
+            className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border z-50 overflow-hidden"
+          >
+            <div className="p-4">
+              <h3 className="font-semibold text-lg mb-2">Notifications</h3>
+              <div className="space-y-2">
+                {notifications.messages.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <MessageCircle className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                    <p>No new messages</p>
+                  </div>
+                ) : (
+                  notifications.messages.map((message) => (
+                    <div
+                      key={message.id}
+                      className="p-3 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer"
+                      onClick={() => {
+                        markAsRead([message.id])
+                        window.location.href = `/messages/${message.sender.id}`
+                      }}
+                    >
+                      <div className="flex items-start gap-3">
+                        {message.sender.image ? (
+                          <img
+                            src={message.sender.image}
+                            alt={message.sender.name || 'User'}
+                            className="w-10 h-10 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-rose-500 to-pink-500 flex items-center justify-center text-white font-bold">
+                            {message.sender.name?.[0]?.toUpperCase() || 'U'}
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm text-gray-900">
+                            {message.sender.name || 'Unknown User'}
+                          </p>
+                          <p className="text-sm text-gray-500 truncate">{message.content}</p>
+                          {message.product && (
+                            <p className="text-xs text-gray-400 mt-1">
+                              Re: {message.product.title}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+              <div className="mt-4 pt-4 border-t">
+                <Link 
+                  href="/messages" 
+                  className="block text-center text-sm text-rose-500 hover:text-rose-600 font-medium"
+                  onClick={() => setOpen(false)}
+                >
+                  View all messages
+                </Link>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
 // Main Header Component
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -180,34 +335,13 @@ export function Header() {
                 <PlusCircle className="h-5 w-5" /> Sell a product
               </Button>
             )}
-            {protectedLink(
-              "/favorites",
-              <Button variant="ghost" className="p-2 rounded-full hover:bg-gray-100 flex items-center gap-2 transition-all duration-200">
-                <Heart className="h-6 w-6 text-gray-700" />
-                <span className="hidden lg:inline">Favorites</span>
-              </Button>
-            )}
-            {protectedLink(
-              "/messages",
-              <Button variant="ghost" className="p-2 rounded-full hover:bg-gray-100 flex items-center gap-2 transition-all duration-200">
-                <MessageCircle className="h-6 w-6 text-gray-700" />
-                <span className="hidden lg:inline">Messages</span>
-              </Button>
-            )}
-            <Button
-              variant="ghost"
-              className="p-2 rounded-full hover:bg-gray-100 flex items-center gap-2 transition-all duration-200"
-              onClick={() => setSearchOpen(true)}
-            >
-              <Search className="h-6 w-6 text-gray-700" />
-              <span className="hidden lg:inline">Search</span>
-            </Button>
             {user?.role === "ADMIN" && (
               <Link href="/admin" className="p-2 rounded-full hover:bg-gray-100 flex items-center gap-2 transition-all duration-200">
                 <Wrench className="h-6 w-6 text-gray-700" />
                 <span className="hidden lg:inline">Admin</span>
               </Link>
             )}
+            {user && <NotificationDropdown />}
             {user ? (
               <UserDropdown user={{ name: user.name ?? undefined, image: user.image ?? undefined }} />
             ) : (

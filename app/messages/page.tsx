@@ -98,7 +98,12 @@ export default function MessagesPage() {
 
   return (
     <div className="container mx-auto p-4 max-w-4xl">
-      <h1 className="text-2xl font-bold mb-6">Messages</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold mb-6">Messages</h1>
+        <Button variant="outline" onClick={() => router.push("/marketplace")}>
+          Browse products
+        </Button>
+      </div>
 
       <div className="relative mb-6">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />

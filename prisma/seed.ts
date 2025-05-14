@@ -99,7 +99,6 @@ async function main() {
     }
   }
 
-  console.log("Seed data created successfully")
 }
 
 main()

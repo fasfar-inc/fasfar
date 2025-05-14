@@ -127,6 +127,7 @@ async function getProduct(id: string) {
     const product = await prisma.product.findUnique({
       where: { id: productId },
       include: {
+        category: true,
         seller: {
           select: {
             id: true,
@@ -174,10 +175,32 @@ async function getProduct(id: string) {
 
     return {
       ...product,
-      primaryImage: primaryImage ? primaryImage.imageUrl : product.images[0]?.imageUrl || null,
+      id: String(product.id),
+      sellerId: String(product.sellerId),
+      title: product.title || "",
+      description: product.description || "",
+      location: product.location || "",
+      category: product.category?.name || product.categoryId || "",
+      latitude: product.latitude ?? undefined,
+      longitude: product.longitude ?? undefined,
+      createdAt: product.createdAt instanceof Date ? product.createdAt.toISOString() : product.createdAt,
+      updatedAt: product.updatedAt instanceof Date ? product.updatedAt.toISOString() : product.updatedAt,
+      images: product.images.map(img => ({
+        ...img,
+        id: String(img.id),
+        productId: String(img.productId),
+        createdAt: img.createdAt instanceof Date ? img.createdAt.toISOString() : img.createdAt,
+      })),
+      primaryImage: (primaryImage ? primaryImage.imageUrl : product.images[0]?.imageUrl) || undefined,
       favoritesCount: product._count.favorites,
       seller: {
         ...product.seller,
+        id: String(product.seller.id),
+        firstName: product.seller.firstName || "",
+        lastName: product.seller.lastName || "",
+        city: product.seller.city || "",
+        profileImage: product.seller.profileImage ?? undefined,
+        createdAt: product.seller.createdAt instanceof Date ? product.seller.createdAt.toISOString() : product.seller.createdAt,
         rating: sellerRating._avg.rating || 0,
         reviewsCount: sellerRating._count.rating,
         productsCount: product.seller._count.products,
@@ -190,8 +213,9 @@ async function getProduct(id: string) {
   }
 }
 
-export default async function ProductPage({ params }: { params: { id: string } }) {
-  const product = await getProduct(params.id)
+export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const product = await getProduct(id)
 
   if (!product) {
     notFound()

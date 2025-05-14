@@ -175,7 +175,6 @@ export async function POST(request: NextRequest) {
     let data
     try {
       data = await request.json()
-      console.log("Données reçues:", JSON.stringify(data, null, 2))
     } catch (error) {
       console.error("Erreur de parsing JSON:", error)
       return NextResponse.json({ error: "Invalid JSON data" }, { status: 400 })
@@ -219,7 +218,6 @@ export async function POST(request: NextRequest) {
         },
       })
 
-      console.log("Produit créé:", product)
 
       // Traiter les images si elles existent
       if (data.images && Array.isArray(data.images) && data.images.length > 0) {
@@ -246,7 +244,6 @@ export async function POST(request: NextRequest) {
               imageData[0].isPrimary = true
             }
 
-            console.log("Création des images:", imageData)
             await prisma.productImage.createMany({
               data: imageData,
             })
