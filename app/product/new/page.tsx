@@ -58,10 +58,6 @@ const styles = `
 }
 `
 
-const styleSheet = document.createElement("style")
-styleSheet.textContent = styles
-document.head.appendChild(styleSheet)
-
 export default function NewProductPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
@@ -85,6 +81,16 @@ export default function NewProductPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [categories, setCategories] = useState<{ id: string, slug: string, name: string }[]>([])
   const [isLoadingCategories, setIsLoadingCategories] = useState(true)
+
+  // Add styles on client-side only
+  useEffect(() => {
+    const styleSheet = document.createElement("style")
+    styleSheet.textContent = styles
+    document.head.appendChild(styleSheet)
+    return () => {
+      document.head.removeChild(styleSheet)
+    }
+  }, [])
 
   // Rediriger vers la page de connexion si l'utilisateur n'est pas connecté
   useEffect(() => {
