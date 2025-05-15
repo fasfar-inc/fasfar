@@ -43,6 +43,7 @@ import {
 import { useToast } from "@/components/ui/use-toast"
 import { useGeolocation } from "@/hooks/use-geolocation"
 import { calculateDistance } from "@/lib/utils"
+import LocationPickerMap from "@/components/location-picker-map"
 
 // Types pour le produit
 interface ProductImage {
@@ -556,12 +557,17 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
               <p className="mt-2 text-3xl font-bold text-rose-500">{product.price.toLocaleString()}€</p>
               <div className="mt-2 flex items-center text-sm text-gray-500 flex-wrap gap-2">
                 <MapPin className="mr-1 h-4 w-4" />
-                <span>{product.location}</span>
+                <span>{product.location || "Nicosia, Cyprus"}</span>
                 {product.latitude && product.longitude && (
-                  <>
-                    <span className="mx-2">•</span>
-                    <span>{distance !== null ? `${distance.toFixed(1)} km` : "Unknown distance"}</span>
-                  </>
+                  <div className="w-full mt-2">
+                    <LocationPickerMap
+                      latitude={product.latitude}
+                      longitude={product.longitude}
+                      address={product.location}
+                      onLocationChange={() => {}}
+                      height="180px"
+                    />
+                  </div>
                 )}
                 <span className="mx-2">•</span>
                 <span>{formatDate(product.createdAt)}</span>
@@ -712,8 +718,30 @@ export default function ProductDetail({ product }: { product: ProductDetail }) {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => {
-              // Implement delete logic here
+            <AlertDialogAction onClick={async () => {
+              try {
+                const response = await fetch(`/api/products/${product.id}`, {
+                  method: "DELETE",
+                })
+
+                if (!response.ok) {
+                  throw new Error("Failed to delete product")
+                }
+
+                toast({
+                  title: "Product deleted",
+                  description: "Your product has been successfully deleted.",
+                })
+
+                router.push("/marketplace")
+              } catch (error) {
+                console.error("Error deleting product:", error)
+                toast({
+                  title: "Error",
+                  description: "An error occurred while deleting the product.",
+                  variant: "destructive",
+                })
+              }
             }} className="bg-red-500 hover:bg-red-600">
               Delete
             </AlertDialogAction>

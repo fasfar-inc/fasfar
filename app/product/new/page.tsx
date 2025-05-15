@@ -23,6 +23,45 @@ import { toast } from "@/components/ui/use-toast"
 
 const STEPS = ["Informations", "Photos", "Localisation", "Finalisation"]
 
+const styles = `
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes highlightPulse {
+  0% {
+    background-color: transparent;
+  }
+  50% {
+    background-color: rgba(244, 114, 182, 0.1);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+.animate-highlight {
+  animation: highlightPulse 2s ease-in-out 2;
+  border-radius: 4px;
+  padding: 2px 4px;
+}
+`
+
+const styleSheet = document.createElement("style")
+styleSheet.textContent = styles
+document.head.appendChild(styleSheet)
+
 export default function NewProductPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
@@ -37,9 +76,9 @@ export default function NewProductPage() {
     price: "",
     category: "",
     condition: "",
-    location: "",
-    latitude: null as number | null,
-    longitude: null as number | null,
+    location: "Nicosia, Cyprus",
+    latitude: 35.1856,
+    longitude: 33.3823,
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [apiError, setApiError] = useState<string | null>(null)
@@ -77,6 +116,23 @@ export default function NewProductPage() {
     fetchCategories()
   }, [])
 
+  // On mount, check for user location in localStorage
+  useEffect(() => {
+    const storedLat = localStorage.getItem("user-latitude")
+    const storedLng = localStorage.getItem("user-longitude")
+    if (storedLat && storedLng) {
+      setFormData((prev) => ({
+        ...prev,
+        latitude: parseFloat(storedLat),
+        longitude: parseFloat(storedLng),
+        location: "Nicosia, Cyprus", // Optionally, use reverse geocoding for city name
+      }))
+    } else {
+      // If no stored location, get current location
+      handleGetCurrentLocation()
+    }
+  }, [])
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
@@ -104,44 +160,61 @@ export default function NewProductPage() {
     }
   }
 
-  const handleAddressChange = (address: string, lat?: number, lng?: number) => {
+  const handleAddressChange = async (address: string) => {
+    let lat = 35.1856; // Default Nicosia
+    let lng = 33.3823;
+    let cityCountry = "Nicosia, Cyprus";
+
+    if (address) {
+      // Try to geocode the address
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`);
+        const data = await res.json();
+        if (data && data.length > 0) {
+          lat = parseFloat(data[0].lat);
+          lng = parseFloat(data[0].lon);
+          cityCountry = address;
+        }
+      } catch (e) {
+        // fallback to default
+      }
+    }
+
     setFormData((prev) => ({
       ...prev,
-      location: address,
-      latitude: lat || prev.latitude,
-      longitude: lng || prev.longitude,
-    }))
+      location: cityCountry,
+      latitude: lat,
+      longitude: lng,
+    }));
+    setAddressIsValid(true);
+    if (errors.location) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors.location;
+        return newErrors;
+      });
+    }
+  };
 
-    // Effacer l'erreur si l'utilisateur corrige le champ
+  const handleLocationChange = (lat: number, lng: number, address?: string) => {
+    let cityCountry = "Nicosia, Cyprus"
+    if (address) {
+      const parts = address.split(",").map(s => s.trim())
+      cityCountry = `${parts[parts.length - 4] || "Nicosia"}, ${parts[parts.length - 1] || "Cyprus"}`
+    }
+    setFormData((prev) => ({
+      ...prev,
+      latitude: lat,
+      longitude: lng,
+      location: cityCountry,
+    }))
+    setAddressIsValid(true)
     if (errors.location) {
       setErrors((prev) => {
         const newErrors = { ...prev }
         delete newErrors.location
         return newErrors
       })
-    }
-  }
-
-  const handleLocationChange = (lat: number, lng: number, address?: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      latitude: lat,
-      longitude: lng,
-      location: address || prev.location,
-    }))
-
-    // Si nous avons une adresse, considérer que l'adresse est valide
-    if (address) {
-      setAddressIsValid(true)
-
-      // Effacer l'erreur si l'utilisateur corrige le champ
-      if (errors.location) {
-        setErrors((prev) => {
-          const newErrors = { ...prev }
-          delete newErrors.location
-          return newErrors
-        })
-      }
     }
   }
 
@@ -429,15 +502,26 @@ export default function NewProductPage() {
             <p className="text-sm">{formData.location || "Address not specified"}</p>
           </div>
 
-          {formData.latitude && formData.longitude && (
-            <div className="h-[200px] rounded-lg overflow-hidden border">
+          {typeof formData.latitude === 'number' && typeof formData.longitude === 'number' ? (
+            <div className="w-full mt-2 animate-fadeIn">
               <LocationPickerMap
                 latitude={formData.latitude}
                 longitude={formData.longitude}
                 address={formData.location}
                 onLocationChange={handleLocationChange}
-                height="200px"
-              />
+              />    
+              <p className="text-xs text-muted-foreground mt-2 text-center animate-highlight">
+                Click anywhere on the map to set a precise location
+              </p>
+            </div>
+          ) : (
+            <div className="border border-dashed rounded-md p-8 text-center">
+              <div className="flex justify-center">
+                <MapPin className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Enter an address to display the map
+              </p>
             </div>
           )}
         </div>
@@ -618,47 +702,44 @@ export default function NewProductPage() {
             {/* Étape 3: Localisation */}
             <div className={currentStep === 2 ? "block" : "hidden"}>
               <div className="space-y-6">
-                <div className="space-y-2">
-                  <AddressAutocompleteFree
-                    value={formData.location}
-                    onChange={handleAddressChange}
-                    label="Product location"
-                    placeholder="Enter the address where the product is located"
-                    required
-                    onValidationChange={setAddressIsValid}
-                  />
+                <div className="space-y-4">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <div className="h-px flex-1 bg-border" />
-                    <span>or</span>
-                    <div className="h-px flex-1 bg-border" />
+                    <MapPin className="h-4 w-4 text-rose-500" />
+                    <span>Your current city is selected</span>
+                    <span className="text-xs px-2 py-0.5 bg-rose-50 text-rose-600 rounded-full">Default</span>
                   </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full"
-                    onClick={handleGetCurrentLocation}
-                  >
-                    <MapPin className="h-4 w-4 mr-2" />
-                    Use my current location
-                  </Button>
+                  
+                  <div className="relative group">
+                    <AddressAutocompleteFree
+                      value={formData.location}
+                      onChange={handleAddressChange}
+                      placeholder="Or search for a specific location..."
+                      required
+                      onValidationChange={setAddressIsValid}
+                    />
+                  </div>
                 </div>
                 {errors.location && <p className="text-red-500 text-sm mt-1">{errors.location}</p>}
 
-                {formData.latitude && formData.longitude ? (
-                  <LocationPickerMap
-                    latitude={formData.latitude}
-                    longitude={formData.longitude}
-                    address={formData.location}
-                    onLocationChange={handleLocationChange}
-                    height="400px"
-                  />
+                {typeof formData.latitude === 'number' && typeof formData.longitude === 'number' ? (
+                  <div className="w-full mt-2 animate-fadeIn">
+                    <LocationPickerMap
+                      latitude={formData.latitude}
+                      longitude={formData.longitude}
+                      address={formData.location}
+                      onLocationChange={handleLocationChange}
+                    />
+                    <p className="text-xs text-muted-foreground mt-2 text-center animate-highlight">
+                      Click anywhere on the map to set a precise location
+                    </p>
+                  </div>
                 ) : (
-                  <div className="border border-dashed rounded-md p-8 text-center">
+                  <div className="border border-dashed rounded-md p-8 text-center animate-pulse">
                     <div className="flex justify-center">
                       <MapPin className="h-8 w-8 text-muted-foreground" />
                     </div>
                     <p className="mt-2 text-sm text-muted-foreground">
-                      Enter an address or use your current location to display the map
+                      Loading your location...
                     </p>
                   </div>
                 )}

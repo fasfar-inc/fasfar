@@ -13,9 +13,10 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, Star, Package, MapPin, Calendar, Edit, Save, X, Plus, Pencil, Trash2, Eye, Link, ArrowLeft } from "lucide-react"
+import { Loader2, Star, Package, MapPin, Calendar, Edit, Save, X, Plus, Pencil, Trash2, Eye, ArrowLeft } from "lucide-react"
 import { format } from "date-fns"
 import { fr } from "date-fns/locale"
+import Link from "next/link"
 import type { UserResponse, ProductResponse } from "@/lib/types"
 import {
   AlertDialog,

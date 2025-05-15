@@ -199,17 +199,17 @@ export function FeaturedProductsClient({ products }: FeaturedProductsProps) {
                 }
               }}
             >
-              <div className="aspect-square overflow-hidden relative">
+              <div className="aspect-square overflow-hidden relative bg-gray-50">
                 <Image
                   src={product.image || "/placeholder.svg"}
                   alt={product.title}
                   width={400}
                   height={400}
-                  className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                  className="h-full w-full object-contain p-2 transition-transform group-hover:scale-105"
                 />
                 {/* Favorite button */}
                 <button
-                  className={`absolute top-3 left-3 z-10 p-2 rounded-full bg-white/90 hover:bg-white shadow border border-gray-200 transition
+                  className={`absolute top-2 left-2 z-10 p-1.5 rounded-full bg-white/90 hover:bg-white shadow border border-gray-200 transition
                     ${favoriteStates[product.id] ? "text-rose-500" : "text-gray-400"} hover:scale-110`}
                   onClick={(e) => toggleFavorite(product.id, e)}
                   disabled={favoriteLoading[product.id]}
@@ -217,20 +217,20 @@ export function FeaturedProductsClient({ products }: FeaturedProductsProps) {
                   style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
                 >
                   {favoriteLoading[product.id] ? (
-                    <svg className="animate-spin h-5 w-5 text-rose-500" viewBox="0 0 24 24">
+                    <svg className="animate-spin h-4 w-4 text-rose-500" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
                     </svg>
                   ) : (
-                    <Heart className={`h-5 w-5 ${favoriteStates[product.id] ? "fill-rose-500" : ""}`} />
+                    <Heart className={`h-4 w-4 ${favoriteStates[product.id] ? "fill-rose-500" : ""}`} />
                   )}
                 </button>
               </div>
-              <div className="p-4">
-                <h3 className="font-medium line-clamp-1">{product.title}</h3>
-                <p className="mt-1 text-lg font-bold text-rose-500">{product.price.toLocaleString()}€</p>
-                <div className="mt-2 flex items-center text-sm text-gray-500">
-                  <MapPin className="mr-1 h-3.5 w-3.5" />
+              <div className="p-3">
+                <h3 className="font-medium text-sm line-clamp-1">{product.title}</h3>
+                <p className="mt-1 text-base font-bold text-rose-500">{product.price.toLocaleString()}€</p>
+                <div className="mt-1.5 flex items-center text-xs text-gray-500">
+                  <MapPin className="mr-1 h-3 w-3" />
                   <span className="line-clamp-1">{product.location}</span>
                   {product.distance !== null ? (
                     <span className="ml-auto">{product.distance} km</span>

@@ -3,9 +3,10 @@ import { notFound } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import ProductEditForm from "./product-edit-form"
 import { Loader2 } from "lucide-react"
+import type { Product } from "./product-edit-form"
 
 // Fonction pour récupérer les données du produit côté serveur
-async function getProduct(id: string) {
+async function getProduct(id: string): Promise<Product | null> {
   const productId = Number.parseInt(id, 10)
 
   if (isNaN(productId)) {
@@ -25,7 +26,25 @@ async function getProduct(id: string) {
       return null
     }
 
-    return product
+    // Transform the data structure to match the component's expectations
+    return {
+      id: product.id.toString(),
+      title: product.title,
+      description: product.description || "",
+      price: product.price,
+      categoryId: product.categoryId,
+      subcategoryId: product.subcategoryId || undefined,
+      condition: product.condition,
+      location: product.location || undefined,
+      latitude: product.latitude || undefined,
+      longitude: product.longitude || undefined,
+      userId: product.sellerId.toString(),
+      productImages: product.images.map(img => ({
+        id: img.id.toString(),
+        imageUrl: img.imageUrl,
+        isPrimary: img.isPrimary
+      }))
+    }
   } catch (error) {
     console.error("Error fetching product:", error)
     return null

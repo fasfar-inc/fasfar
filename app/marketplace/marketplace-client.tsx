@@ -306,17 +306,17 @@ export default function MarketplaceClient({ products, pagination, filters }: Mar
                       href={`/product/${product.id}`}
                       className="group overflow-hidden rounded-lg border bg-white shadow-sm transition-all hover:shadow-md relative"
                     >
-                      <div className="aspect-square overflow-hidden relative">
+                      <div className="aspect-square overflow-hidden relative bg-gray-50">
                         <Image
                           src={product.primaryImage || "/placeholder.svg?height=300&width=300&query=product"}
                           alt={product.title}
                           width={300}
                           height={300}
-                          className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                          className="h-full w-full object-contain p-2 transition-transform group-hover:scale-105"
                         />
                         {/* Favorite button */}
                         <button
-                          className={`absolute top-3 right-3 z-10 p-2 rounded-full bg-white/90 hover:bg-white shadow border border-gray-200 transition
+                          className={`absolute top-2 right-2 z-10 p-1.5 rounded-full bg-white/90 hover:bg-white shadow border border-gray-200 transition
                             ${favoriteStates[product.id] ? "text-rose-500" : "text-gray-400"} hover:scale-110`}
                           onClick={(e) => toggleFavorite(product.id, e)}
                           disabled={favoriteLoading[product.id]}
@@ -324,19 +324,19 @@ export default function MarketplaceClient({ products, pagination, filters }: Mar
                           style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
                         >
                           {favoriteLoading[product.id] ? (
-                            <svg className="animate-spin h-5 w-5 text-rose-500" viewBox="0 0 24 24">
+                            <svg className="animate-spin h-4 w-4 text-rose-500" viewBox="0 0 24 24">
                               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
                             </svg>
                           ) : (
-                            <Heart className={`h-5 w-5 ${favoriteStates[product.id] ? "fill-rose-500" : ""}`} />
+                            <Heart className={`h-4 w-4 ${favoriteStates[product.id] ? "fill-rose-500" : ""}`} />
                           )}
                         </button>
                       </div>
-                      <div className="p-4">
-                        <h3 className="font-medium line-clamp-1">{product.title}</h3>
-                        <p className="mt-1 text-lg font-bold text-rose-500">{product.price.toLocaleString()}€</p>
-                        <div className="mt-2 flex items-center text-sm text-gray-500">
+                      <div className="p-3">
+                        <h3 className="font-medium line-clamp-1 text-sm">{product.title}</h3>
+                        <p className="mt-1 text-base font-bold text-rose-500">{product.price.toLocaleString()}€</p>
+                        <div className="mt-1.5 flex items-center text-xs text-gray-500">
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             width="24"
@@ -347,7 +347,7 @@ export default function MarketplaceClient({ products, pagination, filters }: Mar
                             strokeWidth="2"
                             strokeLinecap="round"
                             strokeLinejoin="round"
-                            className="mr-1 h-3.5 w-3.5"
+                            className="mr-1 h-3 w-3"
                           >
                             <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
                             <circle cx="12" cy="10" r="3"></circle>
@@ -357,7 +357,7 @@ export default function MarketplaceClient({ products, pagination, filters }: Mar
                             <span className="ml-auto">{Math.round(product.distance)} km</span>
                           )}
                         </div>
-                        <div className="mt-3 flex items-center justify-between">
+                        <div className="mt-2 flex items-center justify-between">
                           <span className="text-xs text-gray-500">
                             {product.createdAt
                               ? new Date(product.createdAt).toLocaleDateString("en-US")

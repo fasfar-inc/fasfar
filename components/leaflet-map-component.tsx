@@ -238,6 +238,7 @@ export function LeafletMapComponent({
 
           // Ajouter le marqueur à la carte
           try {
+            if (!mapRef.current) return
             const marker = L.marker([product.latitude, product.longitude], { icon })
               .addTo(mapRef.current)
               .bindPopup(popupContent)
