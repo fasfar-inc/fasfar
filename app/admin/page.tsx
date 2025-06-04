@@ -26,6 +26,7 @@ import {
   Loader2,
   MapPin,
   Plus,
+  Info,
 } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import Link from "next/link"
@@ -152,18 +153,35 @@ interface Product {
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"]
 
+// Add this constant for background colors
+const BACKGROUND_COLORS = [
+  { value: "bg-blue-100 text-blue-700", label: "Blue" },
+  { value: "bg-red-100 text-red-700", label: "Red" },
+  { value: "bg-green-100 text-green-700", label: "Green" },
+  { value: "bg-purple-100 text-purple-700", label: "Purple" },
+  { value: "bg-yellow-100 text-yellow-700", label: "Yellow" },
+  { value: "bg-pink-100 text-pink-700", label: "Pink" },
+  { value: "bg-orange-100 text-orange-700", label: "Orange" },
+  { value: "bg-emerald-100 text-emerald-700", label: "Emerald" },
+  { value: "bg-indigo-100 text-indigo-700", label: "Indigo" },
+  { value: "bg-cyan-100 text-cyan-700", label: "Cyan" },
+  { value: "bg-violet-100 text-violet-700", label: "Violet" },
+  { value: "bg-amber-100 text-amber-700", label: "Amber" },
+]
+
 export default function AdminPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(true)
-  const [activeTab, setActiveTab] = useState("dashboard")
+  const [activeTab, setActiveTab] = useState<"dashboard" | "products" | "categories" | "users" | "messages" | "settings">("dashboard")
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
   const [newCategory, setNewCategory] = useState<Partial<Category>>({ 
     name: "", 
-    slug: "", 
+    slug: "",
     icon: "Home",
+    color: "bg-blue-100 text-blue-700",
     isActive: true,
     order: 0
   })
@@ -228,6 +246,11 @@ export default function AdminPage() {
     lastName: "",
     role: "USER",
   })
+  // Add new state for tooltip visibility
+  const [showTooltip, setShowTooltip] = useState(false);
+  // Add separate state variables for each tooltip
+  const [showTableTooltip, setShowTableTooltip] = useState(false);
+  const [showEditTooltip, setShowEditTooltip] = useState(false);
 
   // Redirect if not authenticated or not admin
   useEffect(() => {
@@ -312,16 +335,29 @@ export default function AdminPage() {
     fetchUsers()
   }, [])
 
+  // Add this function to generate slugs
+  const generateSlug = (name: string) => {
+    return name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric chars with hyphens
+      .replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
+  }
+
   // Handle adding a new category
   const handleAddCategory = async () => {
     try {
+      const categoryData = {
+        ...newCategory,
+        slug: newCategory.slug || generateSlug(newCategory.name || '')
+      };
+
       const response = await fetch("/api/categories", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(newCategory),
-      })
+        body: JSON.stringify(categoryData),
+      });
 
       if (!response.ok) {
         const error = await response.json()
@@ -331,7 +367,14 @@ export default function AdminPage() {
       const createdCategory = await response.json()
       setCategories([...categories, createdCategory])
       setIsAddingCategory(false)
-      setNewCategory({ name: "", slug: "", icon: "Home", isActive: true, order: 0 })
+      setNewCategory({ 
+        name: "", 
+        slug: "",
+        icon: "Home", 
+        color: "bg-blue-100 text-blue-700", 
+        isActive: true, 
+        order: 0 
+      })
       toast.success("Category created successfully")
     } catch (error) {
       console.error("Error creating category:", error)
@@ -344,13 +387,18 @@ export default function AdminPage() {
     if (!editingCategory) return
 
     try {
+      const categoryData = {
+        ...editingCategory,
+        slug: editingCategory.slug || generateSlug(editingCategory.name || '')
+      };
+
       const response = await fetch(`/api/categories/${editingCategory.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(editingCategory),
-      })
+        body: JSON.stringify(categoryData),
+      });
 
       if (!response.ok) {
         const error = await response.json()
@@ -1626,7 +1674,14 @@ export default function AdminPage() {
                         <Input
                           id="name"
                           value={newCategory.name}
-                          onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
+                          onChange={(e) => {
+                            const name = e.target.value;
+                            setNewCategory({ 
+                              ...newCategory, 
+                              name,
+                              slug: generateSlug(name)
+                            });
+                          }}
                           className="col-span-3"
                         />
                       </div>
@@ -1650,18 +1705,59 @@ export default function AdminPage() {
                           onValueChange={(value) => setNewCategory({ ...newCategory, icon: value })}
                         >
                           <SelectTrigger className="col-span-3">
-                            <SelectValue placeholder="Select an icon" />
+                            <SelectValue placeholder="Select an icon">
+                              {newCategory.icon && (
+                                <div className="flex items-center">
+                                  {ICON_MAP[newCategory.icon]?.icon && (
+                                    <div className={`p-1 rounded-md mr-2 ${newCategory.color || getIconColor(newCategory.icon)}`}>
+                                      {React.createElement(ICON_MAP[newCategory.icon].icon, { className: "h-4 w-4" })}
+                                    </div>
+                                  )}
+                                  <span>{ICON_MAP[newCategory.icon]?.label || newCategory.icon}</span>
+                                </div>
+                              )}
+                            </SelectValue>
                           </SelectTrigger>
                           <SelectContent>
                             {availableIcons.map((icon) => (
                               <SelectItem key={icon.name} value={icon.name}>
                                 <div className="flex items-center">
                                   {ICON_MAP[icon.name]?.icon && (
-                                    <div className={`p-1 rounded-md mr-2 ${icon.color}`}>
+                                    <div className={`p-1 rounded-md mr-2 ${newCategory.color || icon.color}`}>
                                       {React.createElement(ICON_MAP[icon.name].icon, { className: "h-4 w-4" })}
                                     </div>
                                   )}
                                   <span>{icon.label}</span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="color" className="text-right">
+                          Background Color
+                        </Label>
+                        <Select
+                          value={newCategory.color}
+                          onValueChange={(value) => setNewCategory({ ...newCategory, color: value })}
+                        >
+                          <SelectTrigger className="col-span-3">
+                            <SelectValue placeholder="Select a color">
+                              {newCategory.color && (
+                                <div className="flex items-center">
+                                  <div className={`w-4 h-4 rounded-full mr-2 ${newCategory.color.split(' ')[0]}`} />
+                                  <span>{BACKGROUND_COLORS.find(c => c.value === newCategory.color)?.label}</span>
+                                </div>
+                              )}
+                            </SelectValue>
+                          </SelectTrigger>
+                          <SelectContent>
+                            {BACKGROUND_COLORS.map((color) => (
+                              <SelectItem key={color.value} value={color.value}>
+                                <div className="flex items-center">
+                                  <div className={`w-4 h-4 rounded-full mr-2 ${color.value.split(' ')[0]}`} />
+                                  <span>{color.label}</span>
                                 </div>
                               </SelectItem>
                             ))}
@@ -1701,7 +1797,27 @@ export default function AdminPage() {
                         <TableRow>
                           <TableHead>Icon</TableHead>
                           <TableHead>Name</TableHead>
-                          <TableHead>Slug</TableHead>
+                          <TableHead>
+                            <div className="flex items-center gap-2">
+                              <span>Slug</span>
+                              <div className="relative">
+                                <div 
+                                  className="cursor-help"
+                                  onMouseEnter={() => setShowTableTooltip(true)}
+                                  onMouseLeave={() => setShowTableTooltip(false)}
+                                >
+                                  <Info className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                                </div>
+                                {showTableTooltip && (
+                                  <div className="absolute z-50 p-2 bg-white border rounded-md shadow-lg w-64 -right-2 top-6">
+                                    <p className="text-sm text-gray-600">
+                                      A slug is a URL-friendly version of the category name. It's used in web addresses and helps with SEO. For example, "Home & Kitchen" becomes "home-kitchen".
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </TableHead>
                           <TableHead>Products</TableHead>
                           <TableHead>Status</TableHead>
                           <TableHead className="text-right">Actions</TableHead>
@@ -1711,7 +1827,7 @@ export default function AdminPage() {
                         {filteredCategories.map((category) => (
                           <TableRow key={category.id}>
                             <TableCell>
-                              <div className={`w-10 h-10 flex items-center justify-center rounded-full ${getIconColor(category.icon)}`}>
+                              <div className={`w-10 h-10 flex items-center justify-center rounded-full ${category.color || getIconColor(category.icon)}`}>
                                 {ICON_MAP[category.icon]?.icon && React.createElement(ICON_MAP[category.icon].icon, { className: "h-5 w-5" })}
                               </div>
                             </TableCell>
@@ -1750,24 +1866,46 @@ export default function AdminPage() {
                                           <Input
                                             id="edit-name"
                                             value={editingCategory.name}
-                                            onChange={(e) =>
-                                              setEditingCategory({ ...editingCategory, name: e.target.value })
-                                            }
+                                            onChange={(e) => {
+                                              const name = e.target.value;
+                                              setEditingCategory({ 
+                                                ...editingCategory, 
+                                                name,
+                                                slug: generateSlug(name)
+                                              });
+                                            }}
                                             className="col-span-3"
                                           />
                                         </div>
                                         <div className="grid grid-cols-4 items-center gap-4">
-                                          <Label htmlFor="edit-slug" className="text-right">
-                                            Slug
-                                          </Label>
-                                          <Input
-                                            id="edit-slug"
-                                            value={editingCategory.slug}
-                                            onChange={(e) =>
-                                              setEditingCategory({ ...editingCategory, slug: e.target.value })
-                                            }
-                                            className="col-span-3"
-                                          />
+                                          <div className="flex items-center justify-end gap-2">
+                                            <Label htmlFor="edit-slug">URL Slug</Label>
+                                            <div className="relative">
+                                              <div 
+                                                className="cursor-help"
+                                                onMouseEnter={() => setShowEditTooltip(true)}
+                                                onMouseLeave={() => setShowEditTooltip(false)}
+                                              >
+                                                <Info className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                                              </div>
+                                              {showEditTooltip && (
+                                                <div className="absolute z-50 p-2 bg-white border rounded-md shadow-lg w-64 -right-2 top-6">
+                                                  <p className="text-sm text-gray-600">
+                                                    A slug is a URL-friendly version of the category name. It's used in web addresses and helps with SEO. For example, "Home & Kitchen" becomes "home-kitchen".
+                                                  </p>
+                                                </div>
+                                              )}
+                                            </div>
+                                          </div>
+                                          <div className="col-span-3 flex items-center">
+                                            <Input
+                                              id="edit-slug"
+                                              value={editingCategory.slug}
+                                              readOnly
+                                              className="bg-gray-50"
+                                            />
+                                            <span className="ml-2 text-sm text-gray-500">(auto-generated)</span>
+                                          </div>
                                         </div>
                                         <div className="grid grid-cols-4 items-center gap-4">
                                           <Label htmlFor="edit-icon" className="text-right">
@@ -1780,14 +1918,25 @@ export default function AdminPage() {
                                             }
                                           >
                                             <SelectTrigger className="col-span-3">
-                                              <SelectValue placeholder="Select an icon" />
+                                              <SelectValue placeholder="Select an icon">
+                                                {editingCategory.icon && (
+                                                  <div className="flex items-center">
+                                                    {ICON_MAP[editingCategory.icon]?.icon && (
+                                                      <div className={`p-1 rounded-md mr-2 ${editingCategory.color || getIconColor(editingCategory.icon)}`}>
+                                                        {React.createElement(ICON_MAP[editingCategory.icon].icon, { className: "h-4 w-4" })}
+                                                      </div>
+                                                    )}
+                                                    <span>{ICON_MAP[editingCategory.icon]?.label || editingCategory.icon}</span>
+                                                  </div>
+                                                )}
+                                              </SelectValue>
                                             </SelectTrigger>
                                             <SelectContent>
                                               {availableIcons.map((icon) => (
                                                 <SelectItem key={icon.name} value={icon.name}>
                                                   <div className="flex items-center">
                                                     {ICON_MAP[icon.name]?.icon && (
-                                                      <div className={`p-1 rounded-md mr-2 ${icon.color}`}>
+                                                      <div className={`p-1 rounded-md mr-2 ${editingCategory.color || icon.color}`}>
                                                         {React.createElement(ICON_MAP[icon.name].icon, { className: "h-4 w-4" })}
                                                       </div>
                                                     )}
@@ -1799,21 +1948,34 @@ export default function AdminPage() {
                                           </Select>
                                         </div>
                                         <div className="grid grid-cols-4 items-center gap-4">
-                                          <Label htmlFor="edit-status" className="text-right">
-                                            Status
+                                          <Label htmlFor="edit-color" className="text-right">
+                                            Background Color
                                           </Label>
                                           <Select
-                                            value={editingCategory.isActive ? "active" : "inactive"}
+                                            value={editingCategory.color}
                                             onValueChange={(value) =>
-                                              setEditingCategory({ ...editingCategory, isActive: value === "active" })
+                                              setEditingCategory({ ...editingCategory, color: value })
                                             }
                                           >
                                             <SelectTrigger className="col-span-3">
-                                              <SelectValue placeholder="Select status" />
+                                              <SelectValue placeholder="Select a color">
+                                                {editingCategory.color && (
+                                                  <div className="flex items-center">
+                                                    <div className={`w-4 h-4 rounded-full mr-2 ${editingCategory.color.split(' ')[0]}`} />
+                                                    <span>{BACKGROUND_COLORS.find(c => c.value === editingCategory.color)?.label}</span>
+                                                  </div>
+                                                )}
+                                              </SelectValue>
                                             </SelectTrigger>
                                             <SelectContent>
-                                              <SelectItem value="active">Active</SelectItem>
-                                              <SelectItem value="inactive">Inactive</SelectItem>
+                                              {BACKGROUND_COLORS.map((color) => (
+                                                <SelectItem key={color.value} value={color.value}>
+                                                  <div className="flex items-center">
+                                                    <div className={`w-4 h-4 rounded-full mr-2 ${color.value.split(' ')[0]}`} />
+                                                    <span>{color.label}</span>
+                                                  </div>
+                                                </SelectItem>
+                                              ))}
                                             </SelectContent>
                                           </Select>
                                         </div>
