@@ -327,12 +327,26 @@ export default function NewProductPage() {
 
     try {
       const productUniqueId = `product-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
+      
+      // Show initial progress notification
+      toast({
+        title: "Processing your product",
+        description: "We're preparing your ad for submission...",
+        duration: 3000,
+      })
 
       const imagesToUpload = images.filter((img) => img.file)
       let processedImages = [...images]
 
       if (imagesToUpload.length > 0) {
         setIsUploading(true)
+        
+        // Notify user about image upload
+        toast({
+          title: "Uploading images",
+          description: `Uploading ${imagesToUpload.length} image${imagesToUpload.length > 1 ? 's' : ''}...`,
+          duration: 5000,
+        })
 
         const uploadPromises = imagesToUpload.map(async (img, index) => {
           if (!img.file) return img
@@ -367,12 +381,26 @@ export default function NewProductPage() {
 
         processedImages = await Promise.all(uploadPromises)
         setIsUploading(false)
+        
+        // Notify completion of uploads
+        toast({
+          title: "Images uploaded",
+          description: "All images have been successfully uploaded",
+          duration: 3000,
+        })
       }
 
       const selectedCategory = categories.find(cat => cat.slug === formData.category)
       if (!selectedCategory) {
         throw new Error("Invalid category selected")
       }
+
+      // Notify about product creation
+      toast({
+        title: "Creating your product",
+        description: "Saving product details to our database...",
+        duration: 3000,
+      })
 
       const productData = {
         title: formData.title,
@@ -594,21 +622,40 @@ export default function NewProductPage() {
               type="submit"
               form="product-form"
               className="bg-rose-500 hover:bg-rose-600 flex items-center gap-2 px-8 py-6 text-lg"
-              disabled={isLoading}
+              disabled={isSubmitting || isUploading}
             >
-              {isLoading ? (
+              {isSubmitting ? (
                 <>
                   <Loader2 className="h-5 w-5 animate-spin" />
-                  Publication en cours...
+                  {isUploading ? "Uploading..." : "Publishing..."}
                 </>
               ) : (
                 <>
                   <Save className="h-5 w-5" />
-                  Publish the ad
+                  Publish
                 </>
               )}
             </Button>
           </div>
+          
+          {isSubmitting && (
+            <div className="mt-4">
+              <div className="w-full h-1 bg-gray-200 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-rose-500" 
+                  style={{ 
+                    width: isUploading ? '40%' : '80%',
+                    transition: 'width 0.8s ease'
+                  }} 
+                />
+              </div>
+              <p className="text-xs text-center mt-2 text-muted-foreground">
+                {isUploading 
+                  ? `Uploading images` 
+                  : "Finalizing your listing"}
+              </p>
+            </div>
+          )}
         </div>
       </div>
     )

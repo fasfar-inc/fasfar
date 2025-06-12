@@ -43,7 +43,7 @@ import {
 import { useToast } from "@/components/ui/use-toast"
 import { useGeolocation } from "@/hooks/use-geolocation"
 import { calculateDistance } from "@/lib/utils"
-import LocationPickerMap from "@/components/location-picker-map"
+import { LocationPickerMap } from "@/components/location-picker-map"
 
 // Types pour le produit
 interface ProductImage {
