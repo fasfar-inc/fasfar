@@ -341,7 +341,7 @@ export default function MapPage() {
                               (
                               {product.distance < 1
                                 ? `${Math.round(product.distance * 1000)} m`
-                                : `${product.distance.toFixed(1)} km`}
+                                : `${product.distance.toFixed(1)} @&`}
                               )
                             </span>
                           )}

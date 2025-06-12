@@ -157,7 +157,7 @@ export default function SignupPage() {
                   id="email"
                   name="email"
                   type="email"
-                  placeholder="jean.dupont@example.com"
+                  placeholder="john.doe@example.com"
                   value={formData.email}
                   onChange={handleChange}
                   className={errors.email ? "border-red-500" : ""}

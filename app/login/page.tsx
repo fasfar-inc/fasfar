@@ -112,7 +112,7 @@ export default function LoginPage() {
                   id="email"
                   name="email"
                   type="email"
-                  placeholder="jean.dupont@exemple.com"
+                  placeholder="john.doe@exemple.com"
                   value={formData.email}
                   onChange={handleChange}
                   className={errors.email ? "border-red-500" : ""}
