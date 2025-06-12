@@ -6,6 +6,12 @@ import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import type { Session } from "next-auth"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
+import { format } from "date-fns"
+import { fr } from "date-fns/locale"
+import { motion } from "framer-motion"
+
+// UI Components
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -14,11 +20,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, Star, Package, MapPin, Calendar, Edit, Save, X, Plus, Pencil, Trash2, Eye, ArrowLeft } from "lucide-react"
-import { format } from "date-fns"
-import { fr } from "date-fns/locale"
-import Link from "next/link"
-import type { UserResponse, ProductResponse } from "@/lib/types"
+import { Separator } from "@/components/ui/separator"
+import { useToast } from "@/components/ui/use-toast"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,11 +32,37 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { useToast } from "@/components/ui/use-toast"
+
+// Icons
+import {
+  Loader2,
+  Star,
+  Package,
+  MapPin,
+  Calendar,
+  Edit,
+  Save,
+  X,
+  ArrowLeft,
+  User,
+  Mail,
+  Phone,
+  Home,
+  FileText,
+  CheckCircle2,
+} from "lucide-react"
+
+// Components
 import NewImageUploader from "@/components/new-image-upload"
 
+// Types
+import type { UserResponse, ProductResponse } from "@/lib/types"
+
 export default function ProfilePage() {
-  const { data: session, status } = useSession() as { data: Session & { user: { id: string } } | null, status: string }
+  const { data: session, status } = useSession() as {
+    data: (Session & { user: { id: string } }) | null
+    status: string
+  }
   const router = useRouter()
   const { toast } = useToast()
 
@@ -58,14 +87,14 @@ export default function ProfilePage() {
   const [isUploadingProfileImage, setIsUploadingProfileImage] = useState(false)
   const [uploadedProfileImageUrl, setUploadedProfileImageUrl] = useState<string | null>(null)
 
-  // Rediriger vers la page de connexion si l'utilisateur n'est pas connecté
+  // Redirect to login page if user is not authenticated
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/login")
     }
   }, [status, router])
 
-  // Charger les données de l'utilisateur
+  // Load user data
   useEffect(() => {
     if (session?.user?.id) {
       fetchUserData(session.user.id)
@@ -139,7 +168,7 @@ export default function ProfilePage() {
         const updatedUser = await response.json()
         setUser(updatedUser)
         setIsEditing(false)
-        setUploadedProfileImageUrl(null) // Réinitialiser l'URL après la sauvegarde
+        setUploadedProfileImageUrl(null) // Reset URL after saving
         toast({
           title: "Profile updated",
           description: "Your information has been updated successfully.",
@@ -164,7 +193,7 @@ export default function ProfilePage() {
     }
   }
 
-  // Supprimer un produit
+  // Delete a product
   const handleDeleteProduct = async () => {
     if (!deleteProductId) return
 
@@ -174,7 +203,7 @@ export default function ProfilePage() {
       })
 
       if (response.ok) {
-        // Mettre à jour la liste des produits
+        // Update product list
         setUserProducts(userProducts.filter((product) => product.id !== deleteProductId))
         toast({
           title: "Product deleted",
@@ -211,12 +240,10 @@ export default function ProfilePage() {
   if (!user) {
     return (
       <div className="container py-10">
-        <Card>
+        <Card className="max-w-md mx-auto">
           <CardHeader>
             <CardTitle>Profile not found</CardTitle>
-            <CardDescription>
-              Unable to load profile information. Please login.
-            </CardDescription>
+            <CardDescription>Unable to load profile information. Please login.</CardDescription>
           </CardHeader>
           <CardFooter>
             <Button onClick={() => router.push("/login")}>Login</Button>
@@ -227,232 +254,417 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="container py-8">
-        <div className="mb-6 flex items-center justify-between">
-          <Link href="/" className="flex items-center text-sm font-medium text-gray-500 hover:text-gray-900">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to home
-          </Link>
-        </div>
-      <h1 className="text-3xl font-bold mb-6">My profile</h1>
+    <div className="container py-8 max-w-6xl">
+      <div className="mb-6 flex items-center justify-between">
+        <Link
+          href="/"
+          className="flex items-center text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to home
+        </Link>
+      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Carte de profil */}
-        <Card className="lg:col-span-1">
-          <CardHeader>
-            <div className="flex justify-between items-start">
-              <CardTitle>Personal information</CardTitle>
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+        <div className="bg-gradient-to-r from-rose-50 to-rose-100 rounded-xl p-8 mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
+          <p className="text-gray-600 mt-2">Manage your personal information and account settings</p>
+        </div>
+      </motion.div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Profile Card */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="lg:col-span-1"
+        >
+          <Card className="overflow-hidden border-0 shadow-lg">
+            <div className="bg-gradient-to-r from-rose-400 to-rose-500 h-24" />
+            <div className="px-6 -mt-12 pb-6">
+              <div className="flex flex-col items-center">
+                <Avatar className="h-24 w-24 border-4 border-white shadow-md">
+                  <AvatarImage
+                    src={user.profileImage || "/placeholder.svg?height=96&width=96"}
+                    alt={user.username}
+                    className="object-cover"
+                  />
+                  <AvatarFallback className="bg-rose-100 text-rose-500 text-xl">
+                    {user.username?.substring(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+
+                <div className="mt-4 text-center">
+                  <h2 className="text-xl font-semibold">{user.username}</h2>
+                  <p className="text-gray-500">
+                    {user.firstName} {user.lastName}
+                  </p>
+
+                  {user.isVerified && (
+                    <div className="mt-2 flex justify-center">
+                      <Badge className="bg-green-100 text-green-700 border-0 flex items-center gap-1 px-2 py-1">
+                        <CheckCircle2 className="h-3 w-3" />
+                        Verified Account
+                      </Badge>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <Separator className="my-6" />
+
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="bg-rose-100 p-2 rounded-full">
+                    <Star className="h-4 w-4 text-rose-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Rating</p>
+                    <p className="font-medium">
+                      {(user.rating ?? 0).toFixed(1)} ({user.reviewsCount ?? 0} reviews)
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <div className="bg-rose-100 p-2 rounded-full">
+                    <Package className="h-4 w-4 text-rose-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Products</p>
+                    <p className="font-medium">
+                      {user.productsCount} product{user.productsCount !== 1 ? "s" : ""}
+                    </p>
+                  </div>
+                </div>
+
+                {user.city && (
+                  <div className="flex items-center gap-3">
+                    <div className="bg-rose-100 p-2 rounded-full">
+                      <MapPin className="h-4 w-4 text-rose-500" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Location</p>
+                      <p className="font-medium">{user.city}</p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-3">
+                  <div className="bg-rose-100 p-2 rounded-full">
+                    <Calendar className="h-4 w-4 text-rose-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Member since</p>
+                    <p className="font-medium">
+                      {format(new Date(user.createdAt), "MMMM yyyy", {
+                        locale: fr,
+                      })}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {user.bio && (
+                <>
+                  <Separator className="my-6" />
+                  <div>
+                    <h3 className="font-medium mb-2 flex items-center">
+                      <FileText className="h-4 w-4 mr-2 text-rose-500" />
+                      About
+                    </h3>
+                    <p className="text-sm text-gray-600 leading-relaxed">{user.bio}</p>
+                  </div>
+                </>
+              )}
+
+              <Separator className="my-6" />
+
+              <div>
+                <h3 className="font-medium mb-3 flex items-center">
+                  <Mail className="h-4 w-4 mr-2 text-rose-500" />
+                  Contact Information
+                </h3>
+                <div className="space-y-2 text-sm">
+                  <p className="flex items-center">
+                    <Mail className="h-3.5 w-3.5 mr-2 text-gray-400" />
+                    <span className="text-gray-600">{user.email}</span>
+                  </p>
+                  {user.phone && (
+                    <p className="flex items-center">
+                      <Phone className="h-3.5 w-3.5 mr-2 text-gray-400" />
+                      <span className="text-gray-600">{user.phone}</span>
+                    </p>
+                  )}
+                </div>
+              </div>
+
               {!isEditing ? (
-                <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)}>
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edit
-                </Button>
-              ) : (
-                <div className="flex space-x-2">
-                  <Button variant="ghost" size="sm" onClick={() => setIsEditing(false)}>
+                <div className="mt-6">
+                  <Button
+                    variant="outline"
+                    className="w-full border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700"
+                    onClick={() => setIsEditing(true)}
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit Profile
+                  </Button>
+                </div>
+              ) : null}
+            </div>
+          </Card>
+        </motion.div>
+
+        {/* Main Content */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="lg:col-span-2"
+        >
+          {isEditing ? (
+            <Card className="border-0 shadow-lg">
+              <CardHeader className="bg-gradient-to-r from-rose-50 to-rose-100">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle>Edit Profile</CardTitle>
+                    <CardDescription>Update your personal information</CardDescription>
+                  </div>
+                  <Button variant="ghost" size="sm" onClick={() => setIsEditing(false)} className="hover:bg-white/20">
                     <X className="h-4 w-4 mr-2" />
                     Cancel
                   </Button>
                 </div>
-              )}
-            </div>
-          </CardHeader>
-          <CardContent>
-            {!isEditing ? (
-              <div className="space-y-6">
-                <div className="flex flex-col items-center space-y-4">
-                  <Avatar className="h-24 w-24">
-                    <AvatarImage src={user.profileImage || "/placeholder.svg?height=96&width=96"} alt={user.username} />
-                    <AvatarFallback>{user.username?.substring(0, 2).toUpperCase()}</AvatarFallback>
-                  </Avatar>
-                  <div className="text-center">
-                    <h2 className="text-xl font-semibold">{user.username}</h2>
-                    <p className="text-muted-foreground">
-                      {user.firstName} {user.lastName}
-                    </p>
-                    {user.isVerified && (
-                      <Badge variant="outline" className="mt-2 bg-green-50 text-green-600 border-green-200">
-                        Verified
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-
-                <div className="space-y-3 pt-4 border-t">
-                  <div className="flex items-center">
-                    <Star className="h-4 w-4 mr-2 text-amber-500" />
-                    <span className="font-medium">
-                      {(user.rating ?? 0).toFixed(1)} ({user.reviewsCount ?? 0} avis)
-                    </span>
-                  </div>
-                  <div className="flex items-center">
-                    <Package className="h-4 w-4 mr-2" />
-                    <span>
-                      {user.productsCount} produit{user.productsCount !== 1 ? "s" : ""}
-                    </span>
-                  </div>
-                  {user.city && (
-                    <div className="flex items-center">
-                      <MapPin className="h-4 w-4 mr-2" />
-                      <span>{user.city}</span>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="flex flex-col items-center space-y-4 mb-6">
+                    <Avatar className="h-24 w-24 border-2 border-rose-200">
+                      <AvatarImage
+                        src={uploadedProfileImageUrl || formData.profileImage || "/placeholder.svg?height=96&width=96"}
+                        alt={user.username}
+                        className="object-cover"
+                      />
+                      <AvatarFallback className="bg-rose-100 text-rose-500 text-xl">
+                        {user.username?.substring(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="w-full max-w-sm">
+                      <Label htmlFor="profileImage" className="text-sm font-medium mb-1.5 block">
+                        Profile Image
+                      </Label>
+                      <NewImageUploader
+                        type="avatar"
+                        userId={session?.user?.id || ""}
+                        onUploadStart={() => setIsUploadingProfileImage(true)}
+                        onUploadComplete={(urls) => {
+                          if (urls && urls.length > 0) {
+                            setUploadedProfileImageUrl(urls[0])
+                          }
+                          setIsUploadingProfileImage(false)
+                        }}
+                      />
+                      {isUploadingProfileImage && (
+                        <div className="flex items-center mt-2 text-sm text-gray-500">
+                          <Loader2 className="h-3 w-3 animate-spin mr-2" />
+                          Uploading...
+                        </div>
+                      )}
                     </div>
-                  )}
-                  <div className="flex items-center">
-                    <Calendar className="h-4 w-4 mr-2" />
-                    <span>
-                      Member since{" "}
-                      {format(new Date(user.createdAt), "MMMM yyyy", {
-                        locale: fr,
-                      })}
-                    </span>
                   </div>
-                </div>
 
-                {user.bio && (
-                  <div className="pt-4 border-t">
-                    <h3 className="font-medium mb-2">About</h3>
-                    <p className="text-sm text-muted-foreground">{user.bio}</p>
-                  </div>
-                )}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="username" className="text-sm font-medium">
+                        Username
+                      </Label>
+                      <div className="relative">
+                        <User className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                        <Input
+                          id="username"
+                          name="username"
+                          value={formData.username}
+                          onChange={handleInputChange}
+                          className="pl-10"
+                          required
+                        />
+                      </div>
+                    </div>
 
-                <div className="pt-4 border-t">
-                  <h3 className="font-medium mb-2">Contact</h3>
-                  <div className="space-y-1 text-sm">
-                    <p>Email: {user.email}</p>
-                    {user.phone && <p>Phone: {user.phone}</p>}
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="flex flex-col items-center space-y-4 mb-6">
-                  <Avatar className="h-24 w-24">
-                    <AvatarImage
-                      src={uploadedProfileImageUrl || formData.profileImage || "/placeholder.svg?height=96&width=96"}
-                      alt={user.username}
-                    />
-                    <AvatarFallback>{user.username?.substring(0, 2).toUpperCase()}</AvatarFallback>
-                  </Avatar>
-                  <div className="w-full">
-                    <Label htmlFor="profileImage">Profile image</Label>
-                    <NewImageUploader
-                      type="avatar"
-                      userId={session?.user?.id || ''}
-                      onUploadStart={() => setIsUploadingProfileImage(true)}
-                      onUploadComplete={(urls) => {
-                        if (urls && urls.length > 0) {
-                          setUploadedProfileImageUrl(urls[0])
-                        }
-                        setIsUploadingProfileImage(false)
-                      }}
-                    />
-                    {isUploadingProfileImage && <p className="text-sm text-gray-500 mt-2">Uploading...</p>}
-                  </div>
-                </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="email" className="text-sm font-medium">
+                        Email
+                      </Label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                        <Input
+                          id="email"
+                          name="email"
+                          type="email"
+                          value={formData.email}
+                          onChange={handleInputChange}
+                          className="pl-10"
+                          required
+                        />
+                      </div>
+                    </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="col-span-2">
-                    <Label htmlFor="username">Username</Label>
-                    <Input
-                      id="username"
-                      name="username"
-                      value={formData.username}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="firstName">First name</Label>
-                    <Input id="firstName" name="firstName" value={formData.firstName} onChange={handleInputChange} />
-                  </div>
-                  <div>
-                    <Label htmlFor="lastName">Last name</Label>
-                    <Input id="lastName" name="lastName" value={formData.lastName} onChange={handleInputChange} />
-                  </div>
-                  <div className="col-span-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-                  <div className="col-span-2">
-                    <Label htmlFor="phone">Phone</Label>
-                    <Input id="phone" name="phone" value={formData.phone} onChange={handleInputChange} />
-                  </div>
-                  <div className="col-span-2">
-                    <Label htmlFor="city">City</Label>
-                    <Input id="city" name="city" value={formData.city} onChange={handleInputChange} />
-                  </div>
-                  <div className="col-span-2">
-                    <Label htmlFor="address">Address</Label>
-                    <Input id="address" name="address" value={formData.address} onChange={handleInputChange} />
-                  </div>
-                  <div className="col-span-2">
-                    <Label htmlFor="postalCode">Postal code</Label>
-                    <Input id="postalCode" name="postalCode" value={formData.postalCode} onChange={handleInputChange} />
-                  </div>
-                  <div className="col-span-2">
-                    <Label htmlFor="bio">Bio</Label>
-                    <Textarea id="bio" name="bio" value={formData.bio} onChange={handleInputChange} rows={4} />
-                  </div>
-                </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="firstName" className="text-sm font-medium">
+                        First Name
+                      </Label>
+                      <Input id="firstName" name="firstName" value={formData.firstName} onChange={handleInputChange} />
+                    </div>
 
-                <Button type="submit" className="w-full bg-rose-500 hover:bg-rose-600" disabled={isSaving}>
-                  {isSaving ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="mr-2 h-4 w-4" />
-                      Save changes
-                    </>
-                  )}
-                </Button>
-              </form>
-            )}
-          </CardContent>
-        </Card>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="lastName" className="text-sm font-medium">
+                        Last Name
+                      </Label>
+                      <Input id="lastName" name="lastName" value={formData.lastName} onChange={handleInputChange} />
+                    </div>
 
-        {/* Contenu principal */}
-        <div className="lg:col-span-2">
-          <Tabs defaultValue="reviews">
-            <TabsList className="grid w-full grid-cols-1">
-              <TabsTrigger value="reviews">Received reviews</TabsTrigger>
-            </TabsList>
-            <TabsContent value="reviews" className="mt-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Received reviews</CardTitle>
-                  <CardDescription>Reviews left by other users on your transactions.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">Feature under development.</p>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="phone" className="text-sm font-medium">
+                        Phone
+                      </Label>
+                      <div className="relative">
+                        <Phone className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                        <Input
+                          id="phone"
+                          name="phone"
+                          value={formData.phone}
+                          onChange={handleInputChange}
+                          className="pl-10"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label htmlFor="city" className="text-sm font-medium">
+                        City
+                      </Label>
+                      <div className="relative">
+                        <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                        <Input
+                          id="city"
+                          name="city"
+                          value={formData.city}
+                          onChange={handleInputChange}
+                          className="pl-10"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label htmlFor="address" className="text-sm font-medium">
+                        Address
+                      </Label>
+                      <div className="relative">
+                        <Home className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                        <Input
+                          id="address"
+                          name="address"
+                          value={formData.address}
+                          onChange={handleInputChange}
+                          className="pl-10"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label htmlFor="postalCode" className="text-sm font-medium">
+                        Postal Code
+                      </Label>
+                      <Input
+                        id="postalCode"
+                        name="postalCode"
+                        value={formData.postalCode}
+                        onChange={handleInputChange}
+                      />
+                    </div>
+
+                    <div className="md:col-span-2 space-y-1.5">
+                      <Label htmlFor="bio" className="text-sm font-medium">
+                        Bio
+                      </Label>
+                      <Textarea
+                        id="bio"
+                        name="bio"
+                        value={formData.bio}
+                        onChange={handleInputChange}
+                        rows={4}
+                        placeholder="Tell others about yourself..."
+                        className="resize-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="pt-4">
+                    <Button type="submit" className="w-full bg-rose-500 hover:bg-rose-600" disabled={isSaving}>
+                      {isSaving ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="mr-2 h-4 w-4" />
+                          Save Changes
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          ) : (
+            <Tabs defaultValue="reviews" className="w-full">
+              <TabsList className="w-full grid grid-cols-1 mb-6 bg-rose-50 p-1">
+                <TabsTrigger
+                  value="reviews"
+                  className="data-[state=active]:bg-white data-[state=active]:text-rose-600 data-[state=active]:shadow-sm"
+                >
+                  Received Reviews
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="reviews" className="mt-0">
+                <Card className="border-0 shadow-lg">
+                  <CardHeader className="bg-gradient-to-r from-rose-50 to-rose-100">
+                    <CardTitle>Received Reviews</CardTitle>
+                    <CardDescription>Reviews left by other users on your transactions</CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                      <div className="bg-rose-50 p-4 rounded-full mb-4">
+                        <Star className="h-8 w-8 text-rose-400" />
+                      </div>
+                      <h3 className="text-lg font-medium mb-2">No Reviews Yet</h3>
+                      <p className="text-gray-500 max-w-md">
+                        Reviews will appear here once other users leave feedback on your transactions.
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          )}
+        </motion.div>
       </div>
 
       {/* Confirmation dialog box for product deletion */}
       <AlertDialog open={deleteProductId !== null} onOpenChange={() => setDeleteProductId(null)}>
-        <AlertDialogContent>
+        <AlertDialogContent className="border-0 shadow-lg">
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure you want to delete this product ?</AlertDialogTitle>
+            <AlertDialogTitle>Are you sure you want to delete this product?</AlertDialogTitle>
             <AlertDialogDescription>
               This action is irreversible. The product will be permanently deleted from the platform.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteProduct} className="bg-red-500 hover:bg-red-600">
+            <AlertDialogCancel className="border-rose-100">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteProduct} className="bg-rose-500 hover:bg-rose-600 text-white">
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
