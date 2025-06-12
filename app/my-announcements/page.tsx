@@ -61,7 +61,7 @@ export default async function MyAnnouncementsPage() {
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">My announcements</h1>
-        <Link href="/create-product">
+        <Link href="/product/new">
           <Button>
             <Plus className="mr-2 h-4 w-4" />
             New announcement
@@ -73,7 +73,7 @@ export default async function MyAnnouncementsPage() {
         <div className="text-center py-12">
           <h2 className="text-xl font-semibold mb-4">You don't have any announcements yet</h2>
           <p className="text-gray-500 mb-6">Start selling your items by creating your first announcement.</p>
-          <Link href="/create-product">
+          <Link href="/product/new">
             <Button>
               <Plus className="mr-2 h-4 w-4" />
               Create an announcement

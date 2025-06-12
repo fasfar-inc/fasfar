@@ -10,7 +10,7 @@ import { X, Upload, Star, StarOff } from "lucide-react"
 export interface UploadedImage {
   id?: string
   file?: File
-  preview: string
+  preview?: string
   isPrimary: boolean
   imageUrl?: string
 }
@@ -87,7 +87,7 @@ export function ImageUploadWithPreview({ images, onChange, maxImages = 5 }: Imag
     const wasMainImage = newImages[index].isPrimary
 
     // Libérer l'URL de l'objet pour éviter les fuites de mémoire
-    if (newImages[index].preview.startsWith("blob:")) {
+    if (newImages[index].preview && newImages[index].preview.startsWith("blob:")) {
       URL.revokeObjectURL(newImages[index].preview)
     }
 
@@ -160,7 +160,7 @@ export function ImageUploadWithPreview({ images, onChange, maxImages = 5 }: Imag
                   }`}
                 >
                   <img
-                    src={image.preview || "/placeholder.svg"}
+                    src={image.imageUrl || image.preview || "/placeholder.svg"}
                     alt={`Image ${index + 1}`}
                     className="w-full h-full object-cover"
                   />

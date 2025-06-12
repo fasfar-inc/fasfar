@@ -89,16 +89,16 @@ export default function SignupPage() {
     }
   }
 
-  const handleSocialLogin = async (provider: string) => {
-    try {
-      setSocialLoading(provider)
-      await signIn(provider, { callbackUrl: "/" })
-    } catch (error) {
-      console.error(`Error connecting with ${provider}:`, error)
-    } finally {
-      setSocialLoading(null)
-    }
-  }
+  // const handleSocialLogin = async (provider: string) => {
+  //   try {
+  //     setSocialLoading(provider)
+  //     await signIn(provider, { callbackUrl: "/" })
+  //   } catch (error) {
+  //     console.error(`Error connecting with ${provider}:`, error)
+  //   } finally {
+  //     setSocialLoading(null)
+  //   }
+  // }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -225,7 +225,7 @@ export default function SignupPage() {
               </div>
             )}
 
-            <Separator className="my-6" />
+            {/* <Separator className="my-6" />
 
             <div className="space-y-4">
               <Button 
@@ -266,7 +266,7 @@ export default function SignupPage() {
                 </svg>
                 {socialLoading === "facebook" ? "Connection in progress..." : "Continue with Facebook"}
               </Button>
-            </div>
+            </div> */}
 
             <p className="text-center text-sm text-gray-500 mt-6">
               Already registered ?{" "}

@@ -71,16 +71,16 @@ export default function LoginPage() {
     }
   }
 
-  const handleSocialLogin = async (provider: string) => {
-    try {
-      setSocialLoading(provider)
-      await signIn(provider, { callbackUrl: "/" })
-    } catch (error) {
-      console.error(`Erreur lors de la connexion avec ${provider}:`, error)
-    } finally {
-      setSocialLoading(null)
-    }
-  }
+  // const handleSocialLogin = async (provider: string) => {
+  //   try {
+  //     setSocialLoading(provider)
+  //     await signIn(provider, { callbackUrl: "/" })
+  //   } catch (error) {
+  //     console.error(`Erreur lors de la connexion avec ${provider}:`, error)
+  //   } finally {
+  //     setSocialLoading(null)
+  //   }
+  // }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -172,8 +172,8 @@ export default function LoginPage() {
                 <p className="text-red-600 text-sm">{authError}</p>
               </div>
             )}
-
-            <Separator className="my-6" />
+          
+            {/* <Separator className="my-6" />
 
             <div className="space-y-4">
               <Button 
@@ -214,7 +214,7 @@ export default function LoginPage() {
                 </svg>
                 {socialLoading === "facebook" ? "Login in progress..." : "Continue with Facebook"}
               </Button>
-            </div>
+            </div> */}
 
             <p className="text-center text-sm text-gray-500 mt-6">
               No account yet ?{" "}

@@ -308,11 +308,12 @@ export default function MarketplaceClient({ products, pagination, filters }: Mar
                     >
                       <div className="aspect-square overflow-hidden relative bg-gray-50">
                         <Image
-                          src={product.primaryImage || "/placeholder.svg?height=300&width=300&query=product"}
+                          src={product.primaryImage || "/placeholder.svg"}
                           alt={product.title}
                           width={300}
                           height={300}
                           className="h-full w-full object-contain p-2 transition-transform group-hover:scale-105"
+                          unoptimized={product.primaryImage?.startsWith('https://')}
                         />
                         {/* Favorite button */}
                         <button

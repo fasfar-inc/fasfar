@@ -2,6 +2,16 @@ import { type NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "../../auth/[...nextauth]/route"
 import { prisma } from "@/lib/prisma"
+import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3"
+
+const s3Client = new S3Client({
+  endpoint: process.env.DIGITALOCEAN_SPACES_ENDPOINT,
+  region: process.env.DIGITALOCEAN_SPACES_REGION,
+  credentials: {
+    accessKeyId: process.env.DIGITALOCEAN_SPACES_KEY!,
+    secretAccessKey: process.env.DIGITALOCEAN_SPACES_SECRET!,
+  },
+})
 
 // GET /api/products/[id] - Récupérer un produit par son ID
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
@@ -168,21 +178,42 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
 
     const userId = Number.parseInt(session.user.id)
 
-    // Vérifier que l'utilisateur est le propriétaire du produit
-    const product = await prisma.product.findUnique({
+    // Vérifier que l'utilisateur est le propriétaire du produit et récupérer les images
+    const productToDelete = await prisma.product.findUnique({
       where: { id },
-      select: { sellerId: true },
+      select: { sellerId: true, images: { select: { imageUrl: true } } },
     })
 
-    if (!product) {
+    if (!productToDelete) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 })
     }
 
-    if (product.sellerId !== userId && session.user.role !== "ADMIN") {
+    if (productToDelete.sellerId !== userId && session.user.role !== "ADMIN") {
       return NextResponse.json({ error: "Not authorized to delete this product" }, { status: 403 })
     }
 
-    // Supprimer le produit
+    // Supprimer les images de DigitalOcean Spaces
+    const bucket = process.env.DIGITALOCEAN_SPACES_BUCKET!
+    const endpoint = process.env.DIGITALOCEAN_SPACES_ENDPOINT!.replace(/^https?:\/\//, "")
+
+    for (const image of productToDelete.images) {
+      try {
+        // Extraire la clé (le chemin du fichier) de l'URL
+        const urlParts = image.imageUrl.split('/')
+        const key = urlParts.slice(3).join('/') // Prend tout après le bucket et l'endpoint
+
+        const command = new DeleteObjectCommand({
+          Bucket: bucket,
+          Key: key,
+        })
+        await s3Client.send(command)
+      } catch (s3Error) {
+        console.error(`Failed to delete image ${image.imageUrl} from S3:`, s3Error)
+        // Continuer la suppression même si une image échoue
+      }
+    }
+
+    // Supprimer le produit de la base de données
     await prisma.product.delete({
       where: { id },
     })

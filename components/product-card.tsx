@@ -89,6 +89,7 @@ export default function ProductCard({ product, showDistance }: ProductCardProps)
               width={300}
               height={300}
               className="object-contain w-full h-full p-2"
+              unoptimized={primaryImage?.imageUrl?.startsWith('https://')}
             />
             {product.isSold && (
               <div className="absolute inset-0 bg-black/60 flex items-center justify-center">

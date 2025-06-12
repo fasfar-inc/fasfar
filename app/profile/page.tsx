@@ -4,6 +4,7 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
+import type { Session } from "next-auth"
 import { useRouter } from "next/navigation"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -29,9 +30,10 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { useToast } from "@/components/ui/use-toast"
+import NewImageUploader from "@/components/new-image-upload"
 
 export default function ProfilePage() {
-  const { data: session, status } = useSession()
+  const { data: session, status } = useSession() as { data: Session & { user: { id: string } } | null, status: string }
   const router = useRouter()
   const { toast } = useToast()
 
@@ -53,6 +55,8 @@ export default function ProfilePage() {
     bio: "",
     profileImage: "",
   })
+  const [isUploadingProfileImage, setIsUploadingProfileImage] = useState(false)
+  const [uploadedProfileImageUrl, setUploadedProfileImageUrl] = useState<string | null>(null)
 
   // Rediriger vers la page de connexion si l'utilisateur n'est pas connecté
   useEffect(() => {
@@ -118,18 +122,24 @@ export default function ProfilePage() {
 
     setIsSaving(true)
     try {
+      const dataToSave = { ...formData }
+      if (uploadedProfileImageUrl) {
+        dataToSave.profileImage = uploadedProfileImageUrl
+      }
+
       const response = await fetch(`/api/users/${session.user.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(dataToSave),
       })
 
       if (response.ok) {
         const updatedUser = await response.json()
         setUser(updatedUser)
         setIsEditing(false)
+        setUploadedProfileImageUrl(null) // Réinitialiser l'URL après la sauvegarde
         toast({
           title: "Profile updated",
           description: "Your information has been updated successfully.",
@@ -318,20 +328,25 @@ export default function ProfilePage() {
                 <div className="flex flex-col items-center space-y-4 mb-6">
                   <Avatar className="h-24 w-24">
                     <AvatarImage
-                      src={formData.profileImage || "/placeholder.svg?height=96&width=96"}
+                      src={uploadedProfileImageUrl || formData.profileImage || "/placeholder.svg?height=96&width=96"}
                       alt={user.username}
                     />
                     <AvatarFallback>{user.username?.substring(0, 2).toUpperCase()}</AvatarFallback>
                   </Avatar>
                   <div className="w-full">
-                    <Label htmlFor="profileImage">URL of the profile image</Label>
-                    <Input
-                      id="profileImage"
-                      name="profileImage"
-                      value={formData.profileImage}
-                      onChange={handleInputChange}
-                      placeholder="URL of the profile image"
+                    <Label htmlFor="profileImage">Profile image</Label>
+                    <NewImageUploader
+                      type="avatar"
+                      userId={session?.user?.id || ''}
+                      onUploadStart={() => setIsUploadingProfileImage(true)}
+                      onUploadComplete={(urls) => {
+                        if (urls && urls.length > 0) {
+                          setUploadedProfileImageUrl(urls[0])
+                        }
+                        setIsUploadingProfileImage(false)
+                      }}
                     />
+                    {isUploadingProfileImage && <p className="text-sm text-gray-500 mt-2">Uploading...</p>}
                   </div>
                 </div>
 
@@ -407,99 +422,10 @@ export default function ProfilePage() {
 
         {/* Contenu principal */}
         <div className="lg:col-span-2">
-          <Tabs defaultValue="products">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="products">My products</TabsTrigger>
+          <Tabs defaultValue="reviews">
+            <TabsList className="grid w-full grid-cols-1">
               <TabsTrigger value="reviews">Received reviews</TabsTrigger>
             </TabsList>
-            <TabsContent value="products" className="mt-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold">My products</h2>
-                <Button onClick={() => router.push("/product/new")} className="bg-rose-500 hover:bg-rose-600">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add a product
-                </Button>
-              </div>
-
-              {userProducts.length > 0 ? (
-                <div className="space-y-4">
-                  {userProducts.map((product) => (
-                    <Card key={product.id} className="overflow-hidden">
-                      <div className="flex flex-col md:flex-row">
-                        <div className="w-full md:w-1/4 h-40 md:h-auto">
-                          <img
-                            src={product.primaryImage || "/placeholder.svg?height=200&width=200"}
-                            alt={product.title}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div className="flex-1 p-4 flex flex-col justify-between">
-                          <div>
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <h3 className="font-semibold text-lg">{product.title}</h3>
-                                <p className="text-xl font-bold text-rose-500 mt-1">
-                                  {product.price.toLocaleString()} €
-                                </p>
-                              </div>
-                              <Badge
-                                variant={product.isSold ? "destructive" : product.isActive ? "default" : "outline"}
-                              >
-                                {product.isSold ? "Vendu" : product.isActive ? "Actif" : "Inactif"}
-                              </Badge>
-                            </div>
-                            <p className="text-sm text-gray-500 mt-2 line-clamp-2">{product.description}</p>
-                          </div>
-                          <div className="flex justify-between items-center mt-4">
-                            <div className="flex items-center text-sm text-gray-500">
-                              <MapPin className="h-3 w-3 mr-1" />
-                              <span className="line-clamp-1">{product.location || "Emplacement non spécifié"}</span>
-                              <span className="mx-2">•</span>
-                              <span>{new Date(product.createdAt).toLocaleDateString()}</span>
-                            </div>
-                            <div className="flex space-x-2">
-                              <Button variant="ghost" size="sm" onClick={() => router.push(`/product/${product.id}`)}>
-                                <Eye className="h-4 w-4 mr-2" />
-                                View
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => router.push(`/product/edit/${product.id}`)}
-                              >
-                                <Pencil className="h-4 w-4 mr-2" />
-                                Edit
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                                onClick={() => setDeleteProductId(product.id)}
-                              >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Delete
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-              ) : (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>No product</CardTitle>
-                    <CardDescription>You have not yet put any products for sale.</CardDescription>
-                  </CardHeader>
-                  <CardFooter>
-                    <Button onClick={() => router.push("/product/new")} className="bg-rose-500 hover:bg-rose-600">
-                      Sell an article
-                    </Button>
-                  </CardFooter>
-                </Card>
-              )}
-            </TabsContent>
             <TabsContent value="reviews" className="mt-6">
               <Card>
                 <CardHeader>

@@ -126,7 +126,7 @@ function UserDropdown({ user }: { user?: { name?: string | null; image?: string 
               <a href="/profile" className="flex items-center gap-2 px-3 py-2.5 hover:bg-gray-50 rounded-lg transition-colors">
                 <User className="w-4 h-4" /> Profile
               </a>
-              <a href="/my-listings" className="flex items-center gap-2 px-3 py-2.5 hover:bg-gray-50 rounded-lg transition-colors">
+              <a href="/my-announcements" className="flex items-center gap-2 px-3 py-2.5 hover:bg-gray-50 rounded-lg transition-colors">
                 <List className="w-4 h-4" /> My Listings
               </a>
               <a href="/favorites" className="flex items-center gap-2 px-3 py-2.5 hover:bg-gray-50 rounded-lg transition-colors">

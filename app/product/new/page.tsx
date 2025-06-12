@@ -4,6 +4,7 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
+import type { Session } from "next-auth"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -59,7 +60,7 @@ const styles = `
 `
 
 export default function NewProductPage() {
-  const { data: session, status } = useSession()
+  const { data: session, status } = useSession() as { data: Session & { user: { id: string } } | null, status: string }
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [currentStep, setCurrentStep] = useState(0)
@@ -309,6 +310,9 @@ export default function NewProductPage() {
     setApiError(null)
 
     try {
+      // Générer un ID unique pour le produit
+      const productUniqueId = `product-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
+
       // Vérifier s'il y a des images à télécharger
       const imagesToUpload = images.filter((img) => img.file)
       let processedImages = [...images]
@@ -321,10 +325,25 @@ export default function NewProductPage() {
           if (!img.file) return img
 
           try {
-            const uploadedUrl = await uploadImage(img.file)
+            const formData = new FormData()
+            formData.append('file', img.file)
+            formData.append('type', 'product')
+            formData.append('userId', session?.user?.id || '')
+            formData.append('productId', productUniqueId)
+
+            const response = await fetch('/api/upload', {
+              method: 'POST',
+              body: formData,
+            })
+
+            if (!response.ok) {
+              throw new Error('Upload failed')
+            }
+
+            const data = await response.json()
             return {
               ...img,
-              imageUrl: uploadedUrl,
+              imageUrl: data.url,
               file: undefined, // Delete the file after upload
             }
           } catch (error) {
@@ -354,11 +373,10 @@ export default function NewProductPage() {
         latitude: formData.latitude,
         longitude: formData.longitude,
         images: processedImages.map((img) => ({
-          imageUrl: img.imageUrl,
+          imageUrl: img.imageUrl || img.preview, // Utiliser l'URL de DigitalOcean ou le preview
           isPrimary: img.isPrimary,
         })),
       }
-
 
       // Envoyer les données à l'API
       const response = await fetch("/api/products", {
