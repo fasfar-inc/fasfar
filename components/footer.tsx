@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { Facebook, Instagram, Linkedin, ShoppingBag, Twitter } from "lucide-react"
+import { Facebook, ShoppingBag } from "lucide-react"
 
 export function Footer() {
   return (
@@ -17,18 +17,6 @@ export function Footer() {
               <Link href="#" className="text-gray-400 hover:text-rose-500 transition-colors">
                 <span className="sr-only">Facebook</span>
                 <Facebook className="h-5 w-5" />
-              </Link>
-              <Link href="#" className="text-gray-400 hover:text-rose-500 transition-colors">
-                <span className="sr-only">Twitter</span>
-                <Twitter className="h-5 w-5" />
-              </Link>
-              <Link href="#" className="text-gray-400 hover:text-rose-500 transition-colors">
-                <span className="sr-only">Instagram</span>
-                <Instagram className="h-5 w-5" />
-              </Link>
-              <Link href="#" className="text-gray-400 hover:text-rose-500 transition-colors">
-                <span className="sr-only">LinkedIn</span>
-                <Linkedin className="h-5 w-5" />
               </Link>
             </div>
           </div>

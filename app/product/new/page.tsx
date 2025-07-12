@@ -6,7 +6,6 @@ import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import type { Session } from "next-auth"
 import { useRouter } from "next/navigation"
-import dynamic from "next/dynamic"
 import Link from "next/link"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -24,22 +23,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { toast } from "@/components/ui/use-toast"
 
 const STEPS = ["Informations", "Photos", "Localisation", "Finalisation"]
-
-const LeafletMapComponent = dynamic(
-  () => import("@/components/leaflet-map-component").then((mod) => mod.LeafletMapComponent),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="h-full w-full flex items-center justify-center bg-gray-100">
-        <div className="text-center">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-rose-500 border-r-transparent align-[-0.125em]"></div>
-          <p className="mt-2 text-gray-600">Chargement de la carte...</p>
-        </div>
-      </div>
-    ),
-  },
-)
-
 
 export default function NewProductPage() {
   const { data: session, status } = useSession() as { data: Session & { user: { id: string } } | null, status: string }
@@ -670,7 +653,7 @@ export default function NewProductPage() {
         </Link>
       </div>
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-2 text-left">Sell an article</h1>
+        <h1 className="text-3xl font-bold mb-2 text-left">Sell a product</h1>
         <p className="text-muted-foreground mb-6 text-left">Create an attractive ad to sell your product quickly</p>
       </div>
 

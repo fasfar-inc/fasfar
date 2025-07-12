@@ -71,11 +71,17 @@ export default function ProductCard({ product, showDistance }: ProductCardProps)
       } else {
         response = await fetch(`/api/products/${product.id}/favorite`, { method: "DELETE" })
       }
-      if (!response.ok) throw new Error()
-      setIsFavorite(!isFavorite)
-      setFavoritesCount((count) => count + (!isFavorite ? 1 : -1))
-    } catch {}
-    setFavoriteLoading(false)
+      if (!response.ok) {
+        throw new Error('Favorite operation failed')
+      }
+      const data = await response.json()
+      setIsFavorite(data.isFavorited)
+      setFavoritesCount((count) => count + (data.isFavorited ? 1 : -1))
+    } catch (error) {
+      console.error('Error toggling favorite:', error)
+    } finally {
+      setFavoriteLoading(false)
+    }
   }
 
   return (

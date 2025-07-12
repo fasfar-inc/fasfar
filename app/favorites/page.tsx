@@ -28,7 +28,7 @@ export default async function FavoritesPage() {
   })
   return (
     <div className="container py-8">
-        <Link href="/marketplace" className="mb-6 flex items-center text-sm font-medium text-gray-500 hover:text-gray-900">
+        <Link href="/" className="mb-6 flex items-center text-sm font-medium text-gray-500 hover:text-gray-900">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to home
         </Link>
